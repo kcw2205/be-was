@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import webserver.interceptor.RequestInterceptorMapper;
+import webserver.dispatcher.RequestDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.data.enums.HttpStatusCode;
@@ -20,18 +20,18 @@ public class RequestHandler implements Runnable {
     private final Socket connection;
     private final HttpResponseFactory httpResponseFactory;
     private final HttpRequestFactory httpRequestFactory;
-    private final RequestInterceptorMapper requestInterceptorMapper;
+    private final RequestDispatcher requestDispatcher;
 
     public RequestHandler(
             Socket connectionSocket,
             HttpRequestFactory httpRequestFactory,
             HttpResponseFactory httpResponseFactory,
-            RequestInterceptorMapper requestInterceptorMapper
+            RequestDispatcher requestDispatcher
     ) {
         this.httpResponseFactory = httpResponseFactory;
         this.httpRequestFactory = httpRequestFactory;
         this.connection = connectionSocket;
-        this.requestInterceptorMapper = requestInterceptorMapper;
+        this.requestDispatcher = requestDispatcher;
     }
 
     public void run() {
@@ -44,7 +44,7 @@ public class RequestHandler implements Runnable {
             HttpRequest httpRequest = httpRequestFactory.parseRequestFromStream(in);
             HttpResponse httpResponse = null;
 
-            httpResponse = requestInterceptorMapper.intercept(httpRequest);
+            httpResponse = requestDispatcher.intercept(httpRequest);
 
             if (httpResponse == null) {
                 httpResponse = httpResponseFactory

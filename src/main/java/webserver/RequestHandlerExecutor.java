@@ -1,6 +1,6 @@
 package webserver;
 
-import webserver.interceptor.RequestInterceptorMapper;
+import webserver.dispatcher.RequestDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.factory.HttpRequestFactory;
@@ -17,22 +17,22 @@ public class RequestHandlerExecutor {
     private final ThreadPoolExecutor executor;
     private final HttpRequestFactory httpRequestFactory;
     private final HttpResponseFactory httpResponseFactory;
-    private final RequestInterceptorMapper requestInterceptorMapper;
+    private final RequestDispatcher requestDispatcher;
 
     public RequestHandlerExecutor(ThreadPoolExecutor executor) {
         this.executor = executor;
         this.httpResponseFactory = new HttpResponseFactory();
         this.httpRequestFactory = new HttpRequestFactory();
-        this.requestInterceptorMapper = new RequestInterceptorMapper(
+        this.requestDispatcher = new RequestDispatcher(
                 httpResponseFactory,
                 new StaticFileInterceptor(),
-                new StaticRouteInterceptor()
+                new RequestHandlerMapping(new StaticRouteInterceptor())
         );
     }
 
     public void createSession(Socket socket) {
         try {
-            executor.execute(new RequestHandler(socket, httpRequestFactory, httpResponseFactory, requestInterceptorMapper));
+            executor.execute(new RequestHandler(socket, httpRequestFactory, httpResponseFactory, requestDispatcher));
         } catch (RejectedExecutionException e) {
             logger.error("Thread Pool Rejected Execution");
             e.printStackTrace();
