@@ -1,16 +1,14 @@
 package webserver;
 
-import webserver.data.HttpRequest;
-import webserver.data.HttpResponse;
-import webserver.data.ResponseEntity;
+import db.UserDatabase;
 import webserver.data.enums.HttpRequestMethod;
-import webserver.factory.HttpResponseFactory;
-import webserver.interceptor.RequestInterceptor;
+import handler.RequestHandler;
+import handler.UserHandler;
 
 import java.util.HashMap;
 
 public class RequestHandlerMapping {
-    private final HashMap<String, RequestInterceptor> requestHandlerMap = new HashMap<>();
+    private final HashMap<String, RequestHandler> requestHandlerMap = new HashMap<>();
 
     public RequestHandlerMapping(
             RequestInterceptor staticRouteInterceptor
@@ -24,11 +22,11 @@ public class RequestHandlerMapping {
     }
 
     // TODO: GET 요청만 배분할 수 있게 설정해둠. 확장할 수 있으면 확장하도록 하기.
-    public void registerGetMapping(String URI, HttpRequestMethod httpRequestMethod, RequestInterceptor interceptor) {
+    public void registerGetMapping(String URI, HttpRequestMethod httpRequestMethod, RequestHandler interceptor) {
         this.requestHandlerMap.put(URI, interceptor);
     }
 
-    public RequestInterceptor getInterceptorByRequestURI(String uri) {
+    public RequestHandler getInterceptorByRequestURI(String uri) {
         return this.requestHandlerMap.get(uri);
     }
 }

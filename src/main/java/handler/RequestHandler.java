@@ -1,9 +1,9 @@
-package webserver.interceptor;
+package handler;
 
 import webserver.data.HttpRequest;
 import webserver.data.ResponseEntity;
 
-public interface RequestInterceptor {
+public interface RequestHandler {
 
     public ResponseEntity handleRequest(HttpRequest httpRequest);
 }
