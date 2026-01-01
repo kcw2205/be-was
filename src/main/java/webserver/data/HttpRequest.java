@@ -9,6 +9,7 @@ public class HttpRequest {
     private final String httpVersion;
     private final String requestURI;
     private final Map<String, String> headers;
+    private final Map<String, String> queryParameters;
     private final HttpBody body;
 
     public HttpRequest(
@@ -16,13 +17,15 @@ public class HttpRequest {
             String requestURI,
             String httpVersion,
             Map<String, String> headers,
+            Map<String, String> queryParameters,
             HttpBody body
     ) {
         this.requestMethod = requestMethod;
         this.httpVersion = httpVersion;
         this.requestURI = requestURI;
-        this.body = body;
         this.headers = headers;
+        this.queryParameters = queryParameters;
+        this.body = body;
     }
 
     public String getHttpVersion() {
@@ -43,5 +46,9 @@ public class HttpRequest {
 
     public HttpRequestMethod getRequestMethod() {
         return requestMethod;
+    }
+
+    public Map<String, String> getQueryParameters() {
+        return queryParameters;
     }
 }

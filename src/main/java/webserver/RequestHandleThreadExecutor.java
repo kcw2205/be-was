@@ -1,38 +1,39 @@
 package webserver;
 
-import webserver.dispatcher.RequestDispatcher;
+import db.UserDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.factory.HttpRequestFactory;
 import webserver.factory.HttpResponseFactory;
-import webserver.interceptor.StaticFileInterceptor;
-import webserver.interceptor.StaticRouteInterceptor;
+import handler.GlobalRequestHandler;
+import handler.StaticFileHandler;
+import handler.StaticRouteHandler;
 
 import java.net.Socket;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class RequestHandlerExecutor {
-    private static final Logger logger = LoggerFactory.getLogger(RequestHandlerExecutor.class);
+public class RequestHandleThreadExecutor {
+    private static final Logger logger = LoggerFactory.getLogger(RequestHandleThreadExecutor.class);
     private final ThreadPoolExecutor executor;
     private final HttpRequestFactory httpRequestFactory;
     private final HttpResponseFactory httpResponseFactory;
     private final RequestDispatcher requestDispatcher;
 
-    public RequestHandlerExecutor(ThreadPoolExecutor executor) {
+    public RequestHandleThreadExecutor(ThreadPoolExecutor executor, UserDatabase userDatabase) {
         this.executor = executor;
         this.httpResponseFactory = new HttpResponseFactory();
         this.httpRequestFactory = new HttpRequestFactory();
         this.requestDispatcher = new RequestDispatcher(
                 httpResponseFactory,
-                new StaticFileInterceptor(),
-                new RequestHandlerMapping(new StaticRouteInterceptor())
+                new StaticFileHandler(),
+                new RequestHandlerMapping(new StaticRouteHandler(), userDatabase)
         );
     }
 
     public void createSession(Socket socket) {
         try {
-            executor.execute(new RequestHandler(socket, httpRequestFactory, httpResponseFactory, requestDispatcher));
+            executor.execute(new GlobalRequestHandler(socket, httpRequestFactory, httpResponseFactory, requestDispatcher));
         } catch (RejectedExecutionException e) {
             logger.error("Thread Pool Rejected Execution");
             e.printStackTrace();

@@ -1,11 +1,11 @@
-package webserver;
+package handler;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import webserver.dispatcher.RequestDispatcher;
+import webserver.RequestDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.data.enums.HttpStatusCode;
@@ -14,15 +14,15 @@ import webserver.data.HttpResponse;
 import webserver.factory.HttpRequestFactory;
 import webserver.factory.HttpResponseFactory;
 
-public class RequestHandler implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
+public class GlobalRequestHandler implements Runnable {
+    private static final Logger logger = LoggerFactory.getLogger(GlobalRequestHandler.class);
 
     private final Socket connection;
     private final HttpResponseFactory httpResponseFactory;
     private final HttpRequestFactory httpRequestFactory;
     private final RequestDispatcher requestDispatcher;
 
-    public RequestHandler(
+    public GlobalRequestHandler(
             Socket connectionSocket,
             HttpRequestFactory httpRequestFactory,
             HttpResponseFactory httpResponseFactory,

@@ -1,11 +1,10 @@
-package webserver.interceptor;
+package handler;
 
 import webserver.data.HttpRequest;
 import webserver.data.ResponseEntity;
 import webserver.data.enums.StaticFileEnum;
-import webserver.factory.HttpResponseFactory;
 
-public class StaticFileInterceptor implements RequestInterceptor {
+public class StaticFileHandler implements RequestHandler {
 
     @Override
     public ResponseEntity handleRequest(HttpRequest httpRequest) {
