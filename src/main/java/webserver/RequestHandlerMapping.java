@@ -11,7 +11,8 @@ public class RequestHandlerMapping {
     private final HashMap<String, RequestHandler> requestHandlerMap = new HashMap<>();
 
     public RequestHandlerMapping(
-            RequestInterceptor staticRouteInterceptor
+            RequestHandler staticRouteInterceptor,
+            UserDatabase userDatabase
     ) {
         this.registerGetMapping("/registration", HttpRequestMethod.GET, staticRouteInterceptor);
         this.registerGetMapping("/", HttpRequestMethod.GET, staticRouteInterceptor);
@@ -19,6 +20,7 @@ public class RequestHandlerMapping {
         this.registerGetMapping("/article", HttpRequestMethod.GET, staticRouteInterceptor);
         this.registerGetMapping("/comment", HttpRequestMethod.GET, staticRouteInterceptor);
         this.registerGetMapping("/login", HttpRequestMethod.GET, staticRouteInterceptor);
+        this.registerGetMapping("/user/create", HttpRequestMethod.GET, new UserHandler(userDatabase));
     }
 
     // TODO: GET 요청만 배분할 수 있게 설정해둠. 확장할 수 있으면 확장하도록 하기.
