@@ -54,11 +54,6 @@ public class WebServer {
         var httpResponseFactory = new HttpResponseFactory();
 
         var userDatabase = new UserDatabaseImpl();
-        var threadPoolExecutor = new ThreadPoolExecutor(
-            CORE_POOL_SIZE, MAX_POOL_SIZE, KEEP_ALIVE_TIME,
-            TimeUnit.SECONDS,
-            new ArrayBlockingQueue<>(QUEUE_CAPACITY),
-            new ThreadPoolExecutor.AbortPolicy());
 
         // static handlers
         var staticHandler = new StaticHandler();
@@ -73,6 +68,16 @@ public class WebServer {
         // handler-mapping
         requestHandlerMapping.registerRequestHandler("/user/create", HttpRequestMethod.GET, userHandler::createUser);
 
-        return new RequestHandleThreadExecutor(threadPoolExecutor, httpRequestParser, httpResponseFactory, requestDispatcher);
+        return new RequestHandleThreadExecutor(
+            CORE_POOL_SIZE,
+            MAX_POOL_SIZE,
+            KEEP_ALIVE_TIME,
+            TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(QUEUE_CAPACITY),
+            new ThreadPoolExecutor.AbortPolicy(),
+            httpRequestParser,
+            httpResponseFactory,
+            requestDispatcher
+        );
     }
 }
