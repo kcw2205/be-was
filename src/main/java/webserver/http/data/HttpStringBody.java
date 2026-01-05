@@ -1,4 +1,4 @@
-package webserver.data;
+package webserver.http.data;
 
 import java.io.UnsupportedEncodingException;
 
