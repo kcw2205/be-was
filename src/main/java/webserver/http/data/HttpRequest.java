@@ -36,8 +36,9 @@ public class HttpRequest {
         return requestURI;
     }
 
-    public Map<String, String> getHeaders() {
-        return headers;
+    public String searchHeaderAttribute(String attributeName) {
+        attributeName = attributeName.toLowerCase();
+        return this.headers.getOrDefault(attributeName, null);
     }
 
     public HttpBody getBody() {
