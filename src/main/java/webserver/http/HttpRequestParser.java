@@ -1,9 +1,9 @@
-package webserver.factory;
+package webserver.http;
 
-import webserver.data.HttpBody;
-import webserver.data.HttpRequest;
-import webserver.data.HttpStringBody;
-import webserver.data.enums.HttpRequestMethod;
+import webserver.http.data.HttpBody;
+import webserver.http.data.HttpRequest;
+import webserver.http.data.HttpStringBody;
+import webserver.http.enums.HttpRequestMethod;
 
 import java.io.BufferedReader;
 import java.io.IOException;

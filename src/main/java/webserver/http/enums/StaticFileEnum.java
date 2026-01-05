@@ -1,10 +1,10 @@
-package webserver.data.enums;
+package webserver.http.enums;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import webserver.data.HttpRequest;
-import webserver.data.ResponseEntity;
-import webserver.data.StaticFileResponse;
+import webserver.http.data.HttpRequest;
+import webserver.http.data.ResponseEntity;
+import webserver.http.data.StaticFileResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +14,7 @@ public enum StaticFileEnum {
     HTML(".html", "text/html;charset=utf-8"),
     CSS(".css", "text/css;charset=utf-8"),
     JS(".js", "application/javascript;charset=utf-8"),
-    PNG( ".png", "image/png"),
+    PNG(".png", "image/png"),
     ICO(".ico", "image/x-icon"),
     JPG(".jpg", "image/jpeg"),
     SVG(".svg", "image/svg+xml");
@@ -42,12 +42,11 @@ public enum StaticFileEnum {
             }
 
             return new StaticFileResponse(
-                    HttpStatusCode.OK,
-                    resourceStream.readAllBytes(),
-                    contentType
+                HttpStatusCode.OK,
+                resourceStream.readAllBytes(),
+                contentType
             );
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Could not find {}, ignoring", resourcePath);
             return null;
         }

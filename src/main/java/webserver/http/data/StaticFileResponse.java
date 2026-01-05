@@ -1,6 +1,6 @@
-package webserver.data;
+package webserver.http.data;
 
-import webserver.data.enums.HttpStatusCode;
+import webserver.http.enums.HttpStatusCode;
 
 public class StaticFileResponse implements ResponseEntity {
     private final HttpStatusCode httpStatusCode;

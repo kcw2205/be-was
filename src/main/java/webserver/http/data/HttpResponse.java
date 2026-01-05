@@ -1,6 +1,6 @@
-package webserver.data;
+package webserver.http.data;
 
-import webserver.data.enums.HttpStatusCode;
+import webserver.http.enums.HttpStatusCode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +68,7 @@ public class HttpResponse {
 
         byte[] byteArray = new byte[byteList.size()];
 
-        for (int i=0; i<byteList.size(); ++i) {
+        for (int i = 0; i < byteList.size(); ++i) {
             byteArray[i] = byteList.get(i);
         }
 

@@ -1,4 +1,4 @@
-package webserver.data;
+package webserver.http.data;
 
 public class HttpByteBody implements HttpBody {
     private final byte[] data;

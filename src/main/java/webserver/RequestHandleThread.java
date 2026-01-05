@@ -2,11 +2,11 @@ package webserver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import webserver.data.HttpRequest;
-import webserver.data.HttpResponse;
-import webserver.data.enums.HttpStatusCode;
-import webserver.factory.HttpRequestParser;
-import webserver.factory.HttpResponseFactory;
+import webserver.http.HttpRequestParser;
+import webserver.http.HttpResponseFactory;
+import webserver.http.data.HttpRequest;
+import webserver.http.data.HttpResponse;
+import webserver.http.enums.HttpStatusCode;
 
 import java.io.IOException;
 import java.io.InputStream;

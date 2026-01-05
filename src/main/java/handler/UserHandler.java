@@ -4,9 +4,9 @@ import db.UserDatabase;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import webserver.data.HttpRequest;
-import webserver.data.ResponseEntity;
-import webserver.data.enums.HttpStatusCode;
+import webserver.http.data.HttpRequest;
+import webserver.http.data.ResponseEntity;
+import webserver.http.enums.HttpStatusCode;
 
 public class UserHandler implements RequestHandler {
 
@@ -19,10 +19,10 @@ public class UserHandler implements RequestHandler {
 
         public static UserResponseDto of(User user) {
             return new UserResponseDto(
-                    user.getUserId(),
-                    user.getPassword(),
-                    user.getName(),
-                    user.getEmail()
+                user.getUserId(),
+                user.getPassword(),
+                user.getName(),
+                user.getEmail()
             );
         }
 
@@ -53,10 +53,10 @@ public class UserHandler implements RequestHandler {
         @Override
         public byte[] getSerializedData() {
             return ("{" + "\"userId\": \"" + this.userId +
-                    "\", \"password\": \"" + this.password +
-                    "\", \"name\": \"" + this.name +
-                    "\", \"email\": \"" + this.email + "\"}")
-                    .getBytes();
+                "\", \"password\": \"" + this.password +
+                "\", \"name\": \"" + this.name +
+                "\", \"email\": \"" + this.email + "\"}")
+                .getBytes();
         }
 
         @Override
@@ -79,10 +79,10 @@ public class UserHandler implements RequestHandler {
         var queryParams = httpRequest.getQueryParameters();
 
         var user = new User(
-                queryParams.get("userId"),
-                queryParams.get("password"),
-                queryParams.get("name"),
-                queryParams.get("email")
+            queryParams.get("userId"),
+            queryParams.get("password"),
+            queryParams.get("name"),
+            queryParams.get("email")
         );
 
         userDatabase.addUser(user);

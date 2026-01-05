@@ -1,4 +1,4 @@
-package webserver.data.enums;
+package webserver.http.enums;
 
 public enum HttpStatusCode {
     OK(200), UNAUTHORIZED(401), NOT_MODIFIED(304), NOT_FOUND(404), NO_CONTENT(204), INTERNAL_SERVER_ERROR(500);

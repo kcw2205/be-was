@@ -1,7 +1,7 @@
 package handler;
 
-import webserver.data.HttpRequest;
-import webserver.data.ResponseEntity;
+import webserver.http.data.HttpRequest;
+import webserver.http.data.ResponseEntity;
 
 public interface RequestHandler {
 

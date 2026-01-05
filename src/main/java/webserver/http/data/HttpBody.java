@@ -1,4 +1,4 @@
-package webserver.data;
+package webserver.http.data;
 
 public interface HttpBody {
 

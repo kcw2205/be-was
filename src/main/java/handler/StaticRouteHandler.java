@@ -1,8 +1,8 @@
 package handler;
 
-import webserver.data.HttpRequest;
-import webserver.data.ResponseEntity;
-import webserver.data.enums.StaticFileEnum;
+import webserver.http.data.HttpRequest;
+import webserver.http.data.ResponseEntity;
+import webserver.http.enums.StaticFileEnum;
 
 public class StaticRouteHandler implements RequestHandler {
 

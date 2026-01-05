@@ -1,9 +1,9 @@
 package webserver;
 
 import db.UserDatabase;
-import webserver.data.enums.HttpRequestMethod;
 import handler.RequestHandler;
 import handler.UserHandler;
+import webserver.http.enums.HttpRequestMethod;
 
 import java.util.HashMap;
 
@@ -11,8 +11,8 @@ public class RequestHandlerMapping {
     private final HashMap<String, RequestHandler> requestHandlerMap = new HashMap<>();
 
     public RequestHandlerMapping(
-            RequestHandler staticRouteInterceptor,
-            UserDatabase userDatabase
+        RequestHandler staticRouteInterceptor,
+        UserDatabase userDatabase
     ) {
         this.registerGetMapping("/registration", HttpRequestMethod.GET, staticRouteInterceptor);
         this.registerGetMapping("/", HttpRequestMethod.GET, staticRouteInterceptor);

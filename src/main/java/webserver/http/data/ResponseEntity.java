@@ -1,7 +1,7 @@
-package webserver.data;
+package webserver.http.data;
 
 
-import webserver.data.enums.HttpStatusCode;
+import webserver.http.enums.HttpStatusCode;
 
 public interface ResponseEntity {
 
