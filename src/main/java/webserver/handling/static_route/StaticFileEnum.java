@@ -1,10 +1,9 @@
-package webserver.http.enums;
+package webserver.handling.static_route;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import webserver.handling.ResponseEntity;
 import webserver.http.data.HttpRequest;
-import webserver.http.data.ResponseEntity;
-import webserver.http.data.StaticFileResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,27 +27,23 @@ public enum StaticFileEnum {
         this.contentType = contentType;
     }
 
-    public ResponseEntity fetchStaticFileFromURI(HttpRequest httpRequest) {
+    public ResponseEntity<?> fetchStaticFileFromURI(HttpRequest httpRequest) {
         if (httpRequest.getRequestURI().endsWith(ext)) {
             return this.fetchStaticFile(httpRequest.getRequestURI().substring(1));
         }
-        return null;
+        return ResponseEntity.notFound();
     }
 
-    public ResponseEntity fetchStaticFile(String resourcePath) {
+    public ResponseEntity<?> fetchStaticFile(String resourcePath) {
         try (InputStream resourceStream = getClass().getClassLoader().getResourceAsStream("static/" + resourcePath)) {
             if (resourceStream == null) {
-                throw new IOException("Could not find static file");
+                return ResponseEntity.notFound();
             }
 
-            return new StaticFileResponse(
-                HttpStatusCode.OK,
-                resourceStream.readAllBytes(),
-                contentType
-            );
+            return ResponseEntity.ok(resourceStream.readAllBytes(), contentType);
+
         } catch (IOException e) {
-            logger.error("Could not find {}, ignoring", resourcePath);
-            return null;
+            return ResponseEntity.notFound();
         }
     }
 }
