@@ -1,13 +1,12 @@
 package webserver;
 
 import db.UserDatabase;
+import handler.StaticFileHandler;
+import handler.StaticRouteHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.factory.HttpRequestFactory;
 import webserver.factory.HttpResponseFactory;
-import handler.GlobalRequestHandler;
-import handler.StaticFileHandler;
-import handler.StaticRouteHandler;
 
 import java.net.Socket;
 import java.util.concurrent.RejectedExecutionException;
@@ -25,15 +24,15 @@ public class RequestHandleThreadExecutor {
         this.httpResponseFactory = new HttpResponseFactory();
         this.httpRequestFactory = new HttpRequestFactory();
         this.requestDispatcher = new RequestDispatcher(
-                httpResponseFactory,
-                new StaticFileHandler(),
-                new RequestHandlerMapping(new StaticRouteHandler(), userDatabase)
+            httpResponseFactory,
+            new StaticFileHandler(),
+            new RequestHandlerMapping(new StaticRouteHandler(), userDatabase)
         );
     }
 
     public void createSession(Socket socket) {
         try {
-            executor.execute(new GlobalRequestHandler(socket, httpRequestFactory, httpResponseFactory, requestDispatcher));
+            executor.execute(new RequestHandleThread(socket, httpRequestFactory, httpResponseFactory, requestDispatcher));
         } catch (RejectedExecutionException e) {
             logger.error("Thread Pool Rejected Execution");
             e.printStackTrace();

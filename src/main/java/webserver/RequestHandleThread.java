@@ -1,32 +1,31 @@
-package handler;
+package webserver;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import webserver.data.HttpRequest;
+import webserver.data.HttpResponse;
+import webserver.data.enums.HttpStatusCode;
+import webserver.factory.HttpRequestFactory;
+import webserver.factory.HttpResponseFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import webserver.RequestDispatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import webserver.data.enums.HttpStatusCode;
-import webserver.data.HttpRequest;
-import webserver.data.HttpResponse;
-import webserver.factory.HttpRequestFactory;
-import webserver.factory.HttpResponseFactory;
-
-public class GlobalRequestHandler implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(GlobalRequestHandler.class);
+public class RequestHandleThread implements Runnable {
+    private static final Logger logger = LoggerFactory.getLogger(RequestHandleThread.class);
 
     private final Socket connection;
     private final HttpResponseFactory httpResponseFactory;
     private final HttpRequestFactory httpRequestFactory;
     private final RequestDispatcher requestDispatcher;
 
-    public GlobalRequestHandler(
-            Socket connectionSocket,
-            HttpRequestFactory httpRequestFactory,
-            HttpResponseFactory httpResponseFactory,
-            RequestDispatcher requestDispatcher
+    public RequestHandleThread(
+        Socket connectionSocket,
+        HttpRequestFactory httpRequestFactory,
+        HttpResponseFactory httpResponseFactory,
+        RequestDispatcher requestDispatcher
     ) {
         this.httpResponseFactory = httpResponseFactory;
         this.httpRequestFactory = httpRequestFactory;
@@ -36,7 +35,7 @@ public class GlobalRequestHandler implements Runnable {
 
     public void run() {
         logger.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(),
-                connection.getPort());
+            connection.getPort());
 
         // TODO: Keep alive 에 대한 옵션이 있는데 리소스를 정리해도 되는가?
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream();) {
@@ -48,11 +47,11 @@ public class GlobalRequestHandler implements Runnable {
 
             if (httpResponse == null) {
                 httpResponse = httpResponseFactory
-                        .createResponse(
-                                httpRequest.getHttpVersion(),
-                                HttpStatusCode.INTERNAL_SERVER_ERROR,
-                                "Request Mapping not found",
-                                "text/plain;charset=utf-8");
+                    .createResponse(
+                        httpRequest.getHttpVersion(),
+                        HttpStatusCode.INTERNAL_SERVER_ERROR,
+                        "Request Mapping not found",
+                        "text/plain;charset=utf-8");
             }
 
             out.write(httpResponse.serialize());
