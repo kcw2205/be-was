@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import webserver.data.HttpRequest;
 import webserver.data.HttpResponse;
 import webserver.data.enums.HttpStatusCode;
-import webserver.factory.HttpRequestFactory;
+import webserver.factory.HttpRequestParser;
 import webserver.factory.HttpResponseFactory;
 
 import java.io.IOException;
@@ -18,17 +18,17 @@ public class RequestHandleThread implements Runnable {
 
     private final Socket connection;
     private final HttpResponseFactory httpResponseFactory;
-    private final HttpRequestFactory httpRequestFactory;
+    private final HttpRequestParser httpRequestParser;
     private final RequestDispatcher requestDispatcher;
 
     public RequestHandleThread(
         Socket connectionSocket,
-        HttpRequestFactory httpRequestFactory,
+        HttpRequestParser httpRequestParser,
         HttpResponseFactory httpResponseFactory,
         RequestDispatcher requestDispatcher
     ) {
         this.httpResponseFactory = httpResponseFactory;
-        this.httpRequestFactory = httpRequestFactory;
+        this.httpRequestParser = httpRequestParser;
         this.connection = connectionSocket;
         this.requestDispatcher = requestDispatcher;
     }
@@ -40,7 +40,7 @@ public class RequestHandleThread implements Runnable {
         // TODO: Keep alive 에 대한 옵션이 있는데 리소스를 정리해도 되는가?
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream();) {
 
-            HttpRequest httpRequest = httpRequestFactory.parseRequestFromStream(in);
+            HttpRequest httpRequest = httpRequestParser.parseRequestFromStream(in);
             HttpResponse httpResponse = null;
 
             httpResponse = requestDispatcher.intercept(httpRequest);

@@ -5,7 +5,7 @@ import handler.StaticFileHandler;
 import handler.StaticRouteHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import webserver.factory.HttpRequestFactory;
+import webserver.factory.HttpRequestParser;
 import webserver.factory.HttpResponseFactory;
 
 import java.net.Socket;
@@ -15,14 +15,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class RequestHandleThreadExecutor {
     private static final Logger logger = LoggerFactory.getLogger(RequestHandleThreadExecutor.class);
     private final ThreadPoolExecutor executor;
-    private final HttpRequestFactory httpRequestFactory;
+    private final HttpRequestParser httpRequestParser;
     private final HttpResponseFactory httpResponseFactory;
     private final RequestDispatcher requestDispatcher;
 
     public RequestHandleThreadExecutor(ThreadPoolExecutor executor, UserDatabase userDatabase) {
         this.executor = executor;
         this.httpResponseFactory = new HttpResponseFactory();
-        this.httpRequestFactory = new HttpRequestFactory();
+        this.httpRequestParser = new HttpRequestParser();
         this.requestDispatcher = new RequestDispatcher(
             httpResponseFactory,
             new StaticFileHandler(),
@@ -32,7 +32,7 @@ public class RequestHandleThreadExecutor {
 
     public void createSession(Socket socket) {
         try {
-            executor.execute(new RequestHandleThread(socket, httpRequestFactory, httpResponseFactory, requestDispatcher));
+            executor.execute(new RequestHandleThread(socket, httpRequestParser, httpResponseFactory, requestDispatcher));
         } catch (RejectedExecutionException e) {
             logger.error("Thread Pool Rejected Execution");
             e.printStackTrace();

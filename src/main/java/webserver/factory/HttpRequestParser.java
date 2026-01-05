@@ -1,9 +1,9 @@
 package webserver.factory;
 
-import webserver.data.enums.HttpRequestMethod;
 import webserver.data.HttpBody;
 import webserver.data.HttpRequest;
 import webserver.data.HttpStringBody;
+import webserver.data.enums.HttpRequestMethod;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,10 +16,10 @@ import java.util.Map;
 
 /**
  * 바이트 배열로부터 파싱해서 이해하기 쉬운 HttpRequest 객체로 바꾸어주는 역할을 하는 클래스
- *
+ * <p>
  * 후에 멀티파트같은 부분도 파싱해서 병합해주는 것도 이곳에서 할 수 있도록 하면 좋을 듯 하다.
  */
-public class HttpRequestFactory {
+public class HttpRequestParser {
 
     public HttpRequest parseRequestFromStream(InputStream inputStream) throws IOException {
 
@@ -35,12 +35,12 @@ public class HttpRequestFactory {
 
         // TODO: null 로 넣는게 좋은 방법일까? 다만 굳이 생성자 오버로딩을 해야할까?
         return new HttpRequest(
-                HttpRequestMethod.valueOf(requestMethodAndURI[0]),
-                requestUri[0],
-                requestMethodAndURI[2],
-                headers,
-                parseQueryParameters(URLDecoder.decode(requestMethodAndURI[1], "UTF-8")),
-                contentLength != 0 ? parseBody(contentType, contentLength, inputStream) : null
+            HttpRequestMethod.valueOf(requestMethodAndURI[0]),
+            requestUri[0],
+            requestMethodAndURI[2],
+            headers,
+            parseQueryParameters(URLDecoder.decode(requestMethodAndURI[1], "UTF-8")),
+            contentLength != 0 ? parseBody(contentType, contentLength, inputStream) : null
         );
     }
 
@@ -75,6 +75,7 @@ public class HttpRequestFactory {
 
             map.put(tokens[0], tokens[1]);
         }
+
         throw new IllegalArgumentException("Invalid Request Format.");
     }
 
