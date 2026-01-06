@@ -9,7 +9,6 @@ import webserver.handling.RequestHandleThreadExecutor;
 import webserver.handling.RequestHandlerMapping;
 import webserver.handling.static_route.StaticHandler;
 import webserver.http.HttpRequestParser;
-import webserver.http.HttpResponseFactory;
 import webserver.http.enums.HttpRequestMethod;
 
 import java.net.ServerSocket;
@@ -21,9 +20,9 @@ import java.util.concurrent.TimeUnit;
 public class WebServer {
     private static final Logger logger = LoggerFactory.getLogger(WebServer.class);
     private static final int DEFAULT_PORT = 8080;
-    private static final int CORE_POOL_SIZE = 2;
-    private static final int MAX_POOL_SIZE = 4;
-    private static final int QUEUE_CAPACITY = 16;
+    private static final int CORE_POOL_SIZE = 200;
+    private static final int MAX_POOL_SIZE = 400;
+    private static final int QUEUE_CAPACITY = 1000;
     private static final long KEEP_ALIVE_TIME = 3;
 
     public static void main(String args[]) throws Exception {
@@ -51,7 +50,6 @@ public class WebServer {
     // DI 해준 다음 쓰레드풀 실행객체 반환
     private static RequestHandleThreadExecutor getRequestHandleThreadExecutor() {
         var httpRequestParser = new HttpRequestParser();
-        var httpResponseFactory = new HttpResponseFactory();
 
         var userDatabase = new UserDatabaseImpl();
 
@@ -63,10 +61,11 @@ public class WebServer {
         var userHandler = new UserHandler(userDatabase);
 
         // request dispatcher
-        var requestDispatcher = new RequestDispatcher(httpResponseFactory, requestHandlerMapping);
+        var requestDispatcher = new RequestDispatcher(requestHandlerMapping);
 
         // handler-mapping
-        requestHandlerMapping.registerRequestHandler("/user/create", HttpRequestMethod.GET, userHandler::createUser);
+        requestHandlerMapping.registerRequestHandler("/user/create", HttpRequestMethod.POST, userHandler::createUser);
+        requestHandlerMapping.registerRequestHandler("/user/login", HttpRequestMethod.POST, userHandler::login);
 
         return new RequestHandleThreadExecutor(
             CORE_POOL_SIZE,
@@ -76,7 +75,6 @@ public class WebServer {
             new ArrayBlockingQueue<>(QUEUE_CAPACITY),
             new ThreadPoolExecutor.AbortPolicy(),
             httpRequestParser,
-            httpResponseFactory,
             requestDispatcher
         );
     }
