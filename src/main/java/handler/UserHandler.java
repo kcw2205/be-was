@@ -1,12 +1,16 @@
 package handler;
 
 import db.UserDatabase;
-import dto.UserResponseDto;
+import dto.LoginDto;
+import dto.UserDto;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.handling.ResponseEntity;
+import webserver.http.converter.FormDataConverter;
 import webserver.http.data.HttpRequest;
+import webserver.http.enums.HttpHeaderKey;
+import webserver.http.enums.HttpStatusCode;
 
 public class UserHandler {
 
@@ -18,21 +22,36 @@ public class UserHandler {
         this.userDatabase = userDatabase;
     }
 
-    public ResponseEntity<UserResponseDto> createUser(HttpRequest httpRequest) {
+    // TODO: DTO 검증로직 추가
+    public ResponseEntity<UserDto> createUser(HttpRequest httpRequest) {
 
-        var queryParams = httpRequest.getQueryParameters();
+        UserDto userDto = httpRequest.getBody().getDataAs(new FormDataConverter(), UserDto.class);
 
-        var user = new User(
-            queryParams.get("userId"),
-            queryParams.get("password"),
-            queryParams.get("name"),
-            queryParams.get("email")
+        User user = new User(
+            userDto.getUserId(),
+            userDto.getPassword(),
+            userDto.getName(),
+            userDto.getEmail()
         );
 
         userDatabase.addUser(user);
 
         log.debug("{} added to database.", user.toString());
 
-        return ResponseEntity.ok(UserResponseDto.of(user), "application/json");
+        return ResponseEntity
+            .builder(UserDto.of(user), HttpStatusCode.REDIRECT, "application/json")
+            .addHeader(HttpHeaderKey.LOCATION, "/");
+    }
+
+    public ResponseEntity<String> login(HttpRequest httpRequest) {
+        LoginDto loginDto = httpRequest.getBody().getDataAs(new FormDataConverter(), LoginDto.class);
+
+        User user = userDatabase.findUserById(loginDto.getUserId());
+
+        if (user == null) {
+            return ResponseEntity.builder("Invalid username or password", HttpStatusCode.FORBIDDEN, "text/plain");
+        }
+
+        return ResponseEntity.ok("Login success", "text/plain");
     }
 }
