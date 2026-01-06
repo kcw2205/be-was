@@ -3,7 +3,6 @@ package webserver.handling;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.http.HttpRequestParser;
-import webserver.http.HttpResponseFactory;
 import webserver.http.data.HttpRequest;
 import webserver.http.data.HttpResponse;
 
@@ -16,17 +15,14 @@ public class RequestHandleThread implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(RequestHandleThread.class);
 
     private final Socket connection;
-    private final HttpResponseFactory httpResponseFactory;
     private final HttpRequestParser httpRequestParser;
     private final RequestDispatcher requestDispatcher;
 
     public RequestHandleThread(
         Socket connectionSocket,
         HttpRequestParser httpRequestParser,
-        HttpResponseFactory httpResponseFactory,
         RequestDispatcher requestDispatcher
     ) {
-        this.httpResponseFactory = httpResponseFactory;
         this.httpRequestParser = httpRequestParser;
         this.connection = connectionSocket;
         this.requestDispatcher = requestDispatcher;
