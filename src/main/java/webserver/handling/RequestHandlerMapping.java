@@ -6,6 +6,8 @@ import webserver.http.enums.HttpRequestMethod;
 
 import java.util.HashMap;
 
+// TODO: Path Variable 지원 생각해보기
+
 /**
  * 요청에 대한 핸들러들의 매핑 정보를 담음
  * <p>
@@ -13,22 +15,20 @@ import java.util.HashMap;
  */
 public class RequestHandlerMapping {
     private final StaticHandler staticHandler;
+    // TODO: 405 (경로는 있으나, Method는 없는 경우) 를 지원해주어야함
     private final HashMap<String, RequestHandler> requestHandlerMap = new HashMap<>();
 
     public RequestHandlerMapping(StaticHandler staticHandler) {
         this.staticHandler = staticHandler;
     }
 
-    // TODO: GET 요청만 배분할 수 있게 설정해둠. 확장할 수 있으면 확장하도록 하기.
     public void registerRequestHandler(String URI, HttpRequestMethod httpRequestMethod, RequestHandler interceptor) {
-        this.requestHandlerMap.put(URI, interceptor);
+        this.requestHandlerMap.put(httpRequestMethod.toString() + " " + URI, interceptor);
     }
 
     public RequestHandler getRequestHandler(HttpRequest httpRequest) {
-        if (this.requestHandlerMap.containsKey(httpRequest.getRequestURI())) {
-            return this.requestHandlerMap.get(httpRequest.getRequestURI());
-        }
+        String fullRequestURI = httpRequest.getHttpMethod().toString() + " " + httpRequest.getRequestURI();
 
-        return staticHandler::handleStaticRouteRequest;
+        return this.requestHandlerMap.getOrDefault(fullRequestURI, staticHandler::handleStaticRouteRequest);
     }
 }
