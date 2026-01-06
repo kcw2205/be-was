@@ -1,8 +1,6 @@
 package webserver.handling;
 
-import webserver.http.HttpResponseFactory;
 import webserver.http.data.HttpRequest;
-import webserver.http.data.HttpResponse;
 
 /**
  * 특정 요청에 대한 비즈니스 로직을 수행하기 위해 요청 처리를 가로채는 부분을 담당
@@ -10,27 +8,18 @@ import webserver.http.data.HttpResponse;
  */
 public class RequestDispatcher {
     private final RequestHandlerMapping requestHandlerMapping;
-    private final HttpResponseFactory httpResponseFactory;
 
-    public RequestDispatcher(HttpResponseFactory httpResponseFactory, RequestHandlerMapping requestHandlerMapping) {
-        this.httpResponseFactory = httpResponseFactory;
+    public RequestDispatcher(RequestHandlerMapping requestHandlerMapping) {
         this.requestHandlerMapping = requestHandlerMapping;
     }
 
     /**
      * HttpRequest 를 확인하여 등록된 요청 형식에 대해 HttpResponse를 사전에 만들어주는 함수
      */
-    public HttpResponse intercept(HttpRequest httpRequest) {
+    public ResponseEntity<?> dispatch(HttpRequest httpRequest) {
         RequestHandler interceptor = this.requestHandlerMapping
             .getRequestHandler(httpRequest);
 
-        ResponseEntity<?> entity = interceptor.handle(httpRequest);
-
-        return httpResponseFactory.createResponse(
-            httpRequest.getHttpVersion(),
-            entity.getHttpStatusCode(),
-            entity.getSerializedBytes(),
-            entity.getContentType()
-        );
+        return interceptor.handle(httpRequest);
     }
 }
