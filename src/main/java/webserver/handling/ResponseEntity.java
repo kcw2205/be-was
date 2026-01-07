@@ -19,18 +19,25 @@ public class ResponseEntity<T> {
 
     private ResponseEntity(T data, HttpStatusCode status, String contentType) {
         this.httpStatusCode = status;
-        this.headers.put(HttpHeaderKey.CONTENT_TYPE.toString(), contentType);
+        if (contentType != null) this.headers.put(HttpHeaderKey.CONTENT_TYPE.toString(), contentType);
 
-        // TODO: ObjectMapper 활용하여 Serial
+        // TODO: ObjectMapper 사용하기..!
         if (data instanceof String) {
             this.data = ((String) data).getBytes(); // 텍스트는 인코딩해서 바이트로
         } else if (data instanceof byte[]) {
             this.data = (byte[]) data;
+        } else if (data == null) {
+            this.data = new byte[0];
         } else {
             this.data = data.toString().getBytes();
         }
 
-        this.headers.put(HttpHeaderKey.CONTENT_LENGTH.toString(), String.valueOf(this.data.length));
+        if (contentType != null)
+            this.headers.put(HttpHeaderKey.CONTENT_LENGTH.toString(), String.valueOf(this.data.length));
+    }
+
+    public static ResponseEntity<Void> empty(HttpStatusCode status) {
+        return new ResponseEntity<>(null, status, null);
     }
 
     public static <T> ResponseEntity<T> builder(T data, HttpStatusCode status, String contentType) {
@@ -42,7 +49,7 @@ public class ResponseEntity<T> {
     }
 
     public static ResponseEntity<?> notFound() {
-        return new ResponseEntity<>(HttpStatusCode.NOT_FOUND, HttpStatusCode.NOT_FOUND, "text/plain");
+        return new ResponseEntity<>(HttpStatusCode.NOT_FOUND.getStatusName(), HttpStatusCode.NOT_FOUND, "text/plain");
     }
 
     public static ResponseEntity<Object> badRequest() {
@@ -55,6 +62,17 @@ public class ResponseEntity<T> {
 
     public ResponseEntity<T> addHeader(HttpHeaderKey key, String value) {
         this.headers.put(key.toString(), value);
+        return this;
+    }
+
+    // TODO: 안티패턴 개선하기
+    public ResponseEntity<T> addCookie(String key, String value, String path, boolean isHttpOnly) {
+        this.cookies.add(key + "=" + value + "; Path=" + path + "; HttpOnly=" + isHttpOnly);
+        return this;
+    }
+
+    public ResponseEntity<T> addCookie(String key, String value, String path) {
+        this.cookies.add(key + "=" + value + "; Path=" + path);
         return this;
     }
 
@@ -74,12 +92,8 @@ public class ResponseEntity<T> {
     }
 
     private void addCookiesToHeader() {
-        StringBuilder sb = new StringBuilder();
-
         this.cookies.forEach(cookie -> {
-            sb.append(cookie).append(";");
+            this.headers.put(HttpHeaderKey.SET_COOKIE.toString(), cookie);
         });
-
-        this.headers.put(HttpHeaderKey.SET_COOKIE.toString(), sb.toString());
     }
 }
