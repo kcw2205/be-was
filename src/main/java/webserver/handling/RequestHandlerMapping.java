@@ -5,6 +5,7 @@ import webserver.http.data.HttpRequest;
 import webserver.http.enums.HttpRequestMethod;
 
 import java.util.HashMap;
+import java.util.Map;
 
 // TODO: Path Variable 지원 생각해보기
 
@@ -16,7 +17,7 @@ import java.util.HashMap;
 public class RequestHandlerMapping {
     private final StaticHandler staticHandler;
     // TODO: 405 (경로는 있으나, Method는 없는 경우) 를 지원해주어야함
-    private final HashMap<String, RequestHandler> requestHandlerMap = new HashMap<>();
+    private final Map<String, RequestHandler> requestHandlerMap = new HashMap<>();
 
     public RequestHandlerMapping(StaticHandler staticHandler) {
         this.staticHandler = staticHandler;

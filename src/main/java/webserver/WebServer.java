@@ -1,5 +1,6 @@
 package webserver;
 
+import db.UserDatabase;
 import db.impl.UserDatabaseImpl;
 import handler.UserHandler;
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import webserver.handling.RequestHandlerMapping;
 import webserver.handling.static_route.StaticHandler;
 import webserver.http.HttpRequestParser;
 import webserver.http.enums.HttpRequestMethod;
+import webserver.session.SessionManager;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -25,7 +27,7 @@ public class WebServer {
     private static final int QUEUE_CAPACITY = 1000;
     private static final long KEEP_ALIVE_TIME = 3;
 
-    public static void main(String args[]) throws Exception {
+    public static void main(String[] args) throws Exception {
         int port = 0;
         if (args == null || args.length == 0) {
             port = DEFAULT_PORT;
@@ -49,23 +51,25 @@ public class WebServer {
 
     // DI 해준 다음 쓰레드풀 실행객체 반환
     private static RequestHandleThreadExecutor getRequestHandleThreadExecutor() {
-        var httpRequestParser = new HttpRequestParser();
+        HttpRequestParser httpRequestParser = new HttpRequestParser();
 
-        var userDatabase = new UserDatabaseImpl();
-
+        UserDatabase userDatabase = new UserDatabaseImpl();
+        SessionManager sessionManager = new SessionManager();
         // static handlers
-        var staticHandler = new StaticHandler();
-        var requestHandlerMapping = new RequestHandlerMapping(staticHandler);
+        StaticHandler staticHandler = new StaticHandler();
+        RequestHandlerMapping requestHandlerMapping = new RequestHandlerMapping(staticHandler);
 
         // user-defined handlers
-        var userHandler = new UserHandler(userDatabase);
+        UserHandler userHandler = new UserHandler(userDatabase, sessionManager);
 
         // request dispatcher
-        var requestDispatcher = new RequestDispatcher(requestHandlerMapping);
+        RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerMapping);
+
 
         // handler-mapping
         requestHandlerMapping.registerRequestHandler("/user/create", HttpRequestMethod.POST, userHandler::createUser);
         requestHandlerMapping.registerRequestHandler("/user/login", HttpRequestMethod.POST, userHandler::login);
+        requestHandlerMapping.registerRequestHandler("/user/me", HttpRequestMethod.GET, userHandler::me);
 
         return new RequestHandleThreadExecutor(
             CORE_POOL_SIZE,

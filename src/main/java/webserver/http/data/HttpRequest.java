@@ -27,14 +27,14 @@ public class HttpRequest {
         this.httpVersion = httpVersion;
         this.requestURI = requestURI;
         this.headers = headers;
-        this.cookies = parseCookies(headers.getOrDefault(HttpHeaderKey.COOKIE, ""));
+        this.cookies = parseCookies(headers.getOrDefault(HttpHeaderKey.COOKIE.toString().toLowerCase(), ""));
         this.queryParameters = queryParameters;
         this.body = body;
     }
 
     private Map<String, String> parseCookies(String str) {
         Map<String, String> map = new HashMap<>();
-        for (String t : str.split(";")) {
+        for (String t : str.split(";\\s*")) {
             String[] cookiePair = t.trim().split("=", 2);
             if (cookiePair.length < 2) continue;
             map.put(cookiePair[0].trim(), cookiePair[1].trim());
@@ -54,6 +54,10 @@ public class HttpRequest {
     public String searchHeaderAttribute(String attributeName) {
         attributeName = attributeName.toLowerCase();
         return this.headers.getOrDefault(attributeName, null);
+    }
+
+    public String getCookieValue(String attributeName) {
+        return cookies.getOrDefault(attributeName, null);
     }
 
     public HttpRequestBody getBody() {

@@ -11,7 +11,7 @@ public class StaticHandler {
         if (httpRequest.getHttpMethod() != HttpRequestMethod.GET) {
             return ResponseEntity.notFound();
         }
-        
+
         // 먼저, 정적 파일 요청인지 확인
         ResponseEntity<?> staticFileResponse = handleStaticFileRequest(httpRequest);
 
