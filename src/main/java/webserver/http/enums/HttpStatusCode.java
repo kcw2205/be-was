@@ -23,6 +23,8 @@ public enum HttpStatusCode {
     }
 
     public String getStatusName() {
-        return this.name().replace("_", " ");
+        return (this.name().charAt(0) + this.name().substring(1).toLowerCase())
+            .replace("_", " ");
+
     }
 }
