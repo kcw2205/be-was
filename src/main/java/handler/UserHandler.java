@@ -53,9 +53,7 @@ public class UserHandler {
     public ResponseEntity<?> login(HttpRequest httpRequest) {
         LoginDto loginDto = httpRequest
             .getBody()
-            .getDataAs(new FormDataConverter(), LoginDto.class);
-
-        System.out.println(loginDto.toString());
+            .getDataAs(new UrlEncodedBodyConverter(), LoginDto.class);
 
         User user = userDatabase.findUserById(loginDto.getUserId());
 
