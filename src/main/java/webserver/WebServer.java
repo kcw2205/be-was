@@ -2,6 +2,7 @@ package webserver;
 
 import db.UserDatabase;
 import db.impl.UserDatabaseImpl;
+import handler.IndexHandler;
 import handler.UserHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,7 @@ public class WebServer {
     private static final Logger logger = LoggerFactory.getLogger(WebServer.class);
     private static final int DEFAULT_PORT = 8080;
     private static final int CORE_POOL_SIZE = 200;
-    private static final int MAX_POOL_SIZE = 400;
+    private static final int MAX_POOL_SIZE = 200;
     private static final int QUEUE_CAPACITY = 1000;
     private static final long KEEP_ALIVE_TIME = 3;
 
@@ -73,6 +74,8 @@ public class WebServer {
         requestHandlerMapping.registerRequestHandler("/user/login", HttpRequestMethod.POST, userHandler::login);
         requestHandlerMapping.registerRequestHandler("/user/logout", HttpRequestMethod.POST, userHandler::logout);
         requestHandlerMapping.registerRequestHandler("/user/me", HttpRequestMethod.GET, userHandler::me);
+        requestHandlerMapping.registerRequestHandler("/", HttpRequestMethod.GET, indexHandler::index);
+
 
         return new RequestHandleThreadExecutor(
             CORE_POOL_SIZE,
