@@ -50,18 +50,6 @@ public class ResponseEntity<T> {
         return new ResponseEntity<>(data, HttpStatusCode.OK, contentType);
     }
 
-    public static ResponseEntity<?> notFound() {
-        return new ResponseEntity<>(HttpStatusCode.NOT_FOUND.getStatusName(), HttpStatusCode.NOT_FOUND, "text/plain");
-    }
-
-    public static ResponseEntity<Object> badRequest() {
-        return new ResponseEntity<>(HttpStatusCode.BAD_REQUEST.getStatusName(), HttpStatusCode.BAD_REQUEST, "text/plain");
-    }
-
-    public static ResponseEntity<Object> internalServerError() {
-        return new ResponseEntity<>(HttpStatusCode.INTERNAL_SERVER_ERROR.getStatusName(), HttpStatusCode.BAD_REQUEST, "text/plain");
-    }
-
     public ResponseEntity<T> addHeader(HttpHeaderKey key, String value) {
         this.headers.put(key.toString(), value);
         return this;
