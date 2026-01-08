@@ -1,4 +1,4 @@
-package webserver.handling.routes;
+package webserver.handling.statics;
 
 import java.io.IOException;
 import java.io.InputStream;

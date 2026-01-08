@@ -1,4 +1,4 @@
-package webserver.handling.routes;
+package webserver.handling.statics;
 
 import webserver.handling.ResponseEntity;
 import webserver.http.data.HttpRequest;
