@@ -48,7 +48,7 @@ class HttpRequestParserTest {
             () -> assertEquals("application/x-www-form-urlencoded", request.searchHeaderAttribute("Content-Type")),
 
             () -> assertNotNull(request.getBody()),
-            () -> assertArrayEquals(requestBody.getBytes(), request.getBody().getContent())
+            () -> assertArrayEquals(requestBody.getBytes(), request.getBody().asByteArray())
         );
     }
 
@@ -63,7 +63,6 @@ class HttpRequestParserTest {
 
         HttpRequest request = httpRequestParser.parseRequestFromStream(in);
 
-        // TODO: case insensitive 한 경우라서 데이터 구조를 바꾸어야 함.
         assertNotNull(request.searchHeaderAttribute("host"));
         assertEquals("localhost:8080", request.searchHeaderAttribute("Host"));
         assertEquals("0", request.searchHeaderAttribute("Content-Length"));
