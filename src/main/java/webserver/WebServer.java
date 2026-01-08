@@ -52,15 +52,16 @@ public class WebServer {
     // DI 해준 다음 쓰레드풀 실행객체 반환
     private static RequestHandleThreadExecutor getRequestHandleThreadExecutor() {
         HttpRequestParser httpRequestParser = new HttpRequestParser();
-
+        StaticFileResolver staticFileResolver = new StaticFileResolver();
         UserDatabase userDatabase = new UserDatabaseImpl();
         SessionManager sessionManager = new SessionManager();
         // static handlers
-        StaticHandler staticHandler = new StaticHandler();
+        StaticHandler staticHandler = new StaticHandler(staticFileResolver);
         RequestHandlerMapping requestHandlerMapping = new RequestHandlerMapping(staticHandler);
 
         // user-defined handlers
         UserHandler userHandler = new UserHandler(userDatabase, sessionManager);
+        IndexHandler indexHandler = new IndexHandler(staticFileResolver, sessionManager);
 
         // request dispatcher
         RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerMapping);
@@ -69,6 +70,7 @@ public class WebServer {
         // handler-mapping
         requestHandlerMapping.registerRequestHandler("/user/create", HttpRequestMethod.POST, userHandler::createUser);
         requestHandlerMapping.registerRequestHandler("/user/login", HttpRequestMethod.POST, userHandler::login);
+        requestHandlerMapping.registerRequestHandler("/user/logout", HttpRequestMethod.POST, userHandler::logout);
         requestHandlerMapping.registerRequestHandler("/user/me", HttpRequestMethod.GET, userHandler::me);
 
         return new RequestHandleThreadExecutor(

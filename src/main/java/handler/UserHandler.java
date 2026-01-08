@@ -50,7 +50,7 @@ public class UserHandler {
             .addHeader(HttpHeaderKey.LOCATION, "/");
     }
 
-    public ResponseEntity<String> login(HttpRequest httpRequest) {
+    public ResponseEntity<?> login(HttpRequest httpRequest) {
         LoginDto loginDto = httpRequest
             .getBody()
             .getDataAs(new FormDataConverter(), LoginDto.class);
@@ -74,6 +74,25 @@ public class UserHandler {
             .addCookie(cookie);
     }
 
+    public ResponseEntity<?> logout(HttpRequest httpRequest) {
+        Cookie cookie = httpRequest.getCookieByName(SessionManager.SESSION_ID).orElse(null);
+
+        if (cookie == null || cookie.getValue() == null) {
+            return ResponseEntity.simple(HttpStatusCode.FORBIDDEN);
+        }
+
+        sessionManager.clearSession(cookie.getValue());
+
+        Cookie resetCookie = new Cookie(SessionManager.SESSION_ID, "");
+        resetCookie.setPath("/");
+        resetCookie.setHttpOnly(true);
+        resetCookie.setMaxAge(0);
+
+        return ResponseEntity.simple(HttpStatusCode.OK)
+            .addCookie(resetCookie);
+    }
+
+    // TODO: null if 예외처리 대신, Checked Exception을 나중에 써보기
     public ResponseEntity<?> me(HttpRequest httpRequest) {
         Cookie sessionCookie = httpRequest.getCookieByName(SessionManager.SESSION_ID).orElse(null);
 
