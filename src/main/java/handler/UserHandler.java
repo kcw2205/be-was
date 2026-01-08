@@ -7,8 +7,10 @@ import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.handling.ResponseEntity;
-import webserver.http.converter.FormDataConverter;
+import webserver.http.converter.UrlEncodedBodyConverter;
+import webserver.http.data.Cookie;
 import webserver.http.data.HttpRequest;
+import webserver.http.enums.HttpContentType;
 import webserver.http.enums.HttpHeaderKey;
 import webserver.http.enums.HttpStatusCode;
 import webserver.session.SessionManager;
@@ -30,7 +32,7 @@ public class UserHandler {
 
         UserDto userDto = httpRequest
             .getBody()
-            .getDataAs(new FormDataConverter(), UserDto.class);
+            .getDataAs(new UrlEncodedBodyConverter(), UserDto.class);
 
         User user = new User(
             userDto.getUserId(),
@@ -44,7 +46,7 @@ public class UserHandler {
         log.debug("{} added to database.", user.toString());
 
         return ResponseEntity
-            .builder(UserDto.of(user), HttpStatusCode.REDIRECT, "application/json")
+            .builder(UserDto.of(user), HttpStatusCode.REDIRECT, HttpContentType.APPLICATION_JSON)
             .addHeader(HttpHeaderKey.LOCATION, "/");
     }
 
@@ -58,7 +60,7 @@ public class UserHandler {
         User user = userDatabase.findUserById(loginDto.getUserId());
 
         if (user == null || !user.getPassword().equals(loginDto.getPassword())) {
-            return ResponseEntity.builder("Invalid username or password", HttpStatusCode.FORBIDDEN, "text/plain");
+            return ResponseEntity.builder("Invalid username or password", HttpStatusCode.FORBIDDEN, HttpContentType.TEXT_PLAIN);
         }
 
         String sid = this.sessionManager.createSession(user);
@@ -68,8 +70,8 @@ public class UserHandler {
         cookie.setHttpOnly(true);
 
         return ResponseEntity
-            .ok("Login success", "text/plain")
-            .addCookie(SessionManager.SESSION_ID, sid, "/");
+            .simple(HttpStatusCode.OK)
+            .addCookie(cookie);
     }
 
     public ResponseEntity<?> me(HttpRequest httpRequest) {

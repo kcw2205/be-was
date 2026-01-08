@@ -9,7 +9,7 @@ public class StaticHandler {
 
     public ResponseEntity<?> handleStaticRouteRequest(HttpRequest httpRequest) {
         if (httpRequest.getHttpMethod() != HttpRequestMethod.GET) {
-            return ResponseEntity.notFound();
+            return ResponseEntity.simple(HttpStatusCode.NOT_FOUND);
         }
 
         // 먼저, 정적 파일 요청인지 확인
