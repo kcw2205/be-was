@@ -4,9 +4,11 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class SessionManager {
+
 
     private record SessionObject(Object payload, LocalDateTime expiration) {
 
@@ -15,7 +17,7 @@ public class SessionManager {
         }
     }
 
-    public static final String SESSION_ID = "SID";
+    public static final String SESSION_ID = "sid";
     public static final Duration SESSION_EXPIRATION = Duration.ofHours(3);
     private final Map<String, SessionObject> sessions;
 
@@ -31,17 +33,21 @@ public class SessionManager {
     }
 
     // TODO: Object 반환...!!! 어떻게할지..? -> Servlet 에서는 어쩔 수 없이 캐스팅했던 것 같은데 더 좋은 방법?
-    public Object findById(String sid) {
+    public Optional<Object> findById(String sid) {
         SessionObject sobj = sessions.get(sid);
 
-        if (sobj.isExpired()) return null;
+        if (sobj == null || sobj.isExpired()) return Optional.empty();
 
-        return sobj.payload();
+        return Optional.ofNullable(sobj.payload());
     }
 
     // TODO: UUID 대신에 좋은 다양한 방법 생각해보기
     // 현재로써는 간단하게 UUID 를 받아왔음. 현재로썬 충돌이 가장 덜나며, 간단하기 때문.
     private String createSessionId() {
         return UUID.randomUUID().toString();
+    }
+
+    public void clearSession(String value) {
+        sessions.remove(value);
     }
 }
