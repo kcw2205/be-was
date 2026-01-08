@@ -7,8 +7,10 @@ import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.handling.ResponseEntity;
-import webserver.http.converter.FormDataConverter;
+import webserver.http.converter.UrlEncodedBodyConverter;
+import webserver.http.data.Cookie;
 import webserver.http.data.HttpRequest;
+import webserver.http.enums.HttpContentType;
 import webserver.http.enums.HttpHeaderKey;
 import webserver.http.enums.HttpStatusCode;
 import webserver.session.SessionManager;
@@ -30,7 +32,7 @@ public class UserHandler {
 
         UserDto userDto = httpRequest
             .getBody()
-            .getDataAs(new FormDataConverter(), UserDto.class);
+            .getDataAs(new UrlEncodedBodyConverter(), UserDto.class);
 
         User user = new User(
             userDto.getUserId(),
@@ -44,46 +46,67 @@ public class UserHandler {
         log.debug("{} added to database.", user.toString());
 
         return ResponseEntity
-            .builder(UserDto.of(user), HttpStatusCode.REDIRECT, "application/json")
+            .builder(UserDto.of(user), HttpStatusCode.REDIRECT, HttpContentType.APPLICATION_JSON)
             .addHeader(HttpHeaderKey.LOCATION, "/");
     }
 
-    public ResponseEntity<String> login(HttpRequest httpRequest) {
+    public ResponseEntity<?> login(HttpRequest httpRequest) {
         LoginDto loginDto = httpRequest
             .getBody()
-            .getDataAs(new FormDataConverter(), LoginDto.class);
-
-        System.out.println(loginDto.toString());
+            .getDataAs(new UrlEncodedBodyConverter(), LoginDto.class);
 
         User user = userDatabase.findUserById(loginDto.getUserId());
 
         if (user == null || !user.getPassword().equals(loginDto.getPassword())) {
-            return ResponseEntity.builder("Invalid username or password", HttpStatusCode.FORBIDDEN, "text/plain");
+            return ResponseEntity.builder("Invalid username or password", HttpStatusCode.FORBIDDEN, HttpContentType.TEXT_PLAIN);
         }
 
         String sid = this.sessionManager.createSession(user);
 
+        Cookie cookie = new Cookie(SessionManager.SESSION_ID, sid);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
         return ResponseEntity
-            .ok("Login success", "text/plain")
-            .addCookie(SessionManager.SESSION_ID, sid, "/");
+            .simple(HttpStatusCode.OK)
+            .addCookie(cookie);
     }
 
-    public ResponseEntity<?> me(HttpRequest httpRequest) {
-        String sid = httpRequest.getCookieValue(SessionManager.SESSION_ID);
+    public ResponseEntity<?> logout(HttpRequest httpRequest) {
+        Cookie cookie = httpRequest.getCookieByName(SessionManager.SESSION_ID).orElse(null);
 
-        log.debug("{} is user cookie value", sid);
+        if (cookie == null || cookie.getValue() == null) {
+            return ResponseEntity.simple(HttpStatusCode.FORBIDDEN);
+        }
+
+        sessionManager.clearSession(cookie.getValue());
+
+        Cookie resetCookie = new Cookie(SessionManager.SESSION_ID, "");
+        resetCookie.setPath("/");
+        resetCookie.setHttpOnly(true);
+        resetCookie.setMaxAge(0);
+
+        return ResponseEntity.simple(HttpStatusCode.OK)
+            .addCookie(resetCookie);
+    }
+
+    // TODO: null if 예외처리 대신, Checked Exception을 나중에 써보기
+    public ResponseEntity<?> me(HttpRequest httpRequest) {
+        Cookie sessionCookie = httpRequest.getCookieByName(SessionManager.SESSION_ID).orElse(null);
 
         // TODO: 로직이 반복되는 느낌 + empty Response 해도 괜찮을지.
-        if (sid == null) {
-            return ResponseEntity.empty(HttpStatusCode.UNAUTHORIZED);
+        if (sessionCookie == null) {
+            return ResponseEntity.simple(HttpStatusCode.UNAUTHORIZED);
         }
 
-        User user = (User) sessionManager.findById(sid);
+        log.debug("{} is user cookie value", sessionCookie.getValue());
+
+        User user = (User) sessionManager.findById(sessionCookie.getValue()).orElse(null);
 
         if (user == null) {
-            return ResponseEntity.empty(HttpStatusCode.UNAUTHORIZED);
+            return ResponseEntity.simple(HttpStatusCode.UNAUTHORIZED);
         }
 
-        return ResponseEntity.ok(UserDto.of(user), "application/json");
+        return ResponseEntity.ok(UserDto.of(user), HttpContentType.APPLICATION_JSON);
     }
 }

@@ -1,15 +1,22 @@
-package webserver.handling.static_route;
+package webserver.handling.statics;
 
 import webserver.handling.ResponseEntity;
 import webserver.http.data.HttpRequest;
+import webserver.http.enums.HttpContentType;
 import webserver.http.enums.HttpRequestMethod;
 import webserver.http.enums.HttpStatusCode;
 
 public class StaticHandler {
 
+    private final StaticFileResolver staticFileResolver;
+
+    public StaticHandler(StaticFileResolver staticFileResolver) {
+        this.staticFileResolver = staticFileResolver;
+    }
+
     public ResponseEntity<?> handleStaticRouteRequest(HttpRequest httpRequest) {
         if (httpRequest.getHttpMethod() != HttpRequestMethod.GET) {
-            return ResponseEntity.notFound();
+            return ResponseEntity.simple(HttpStatusCode.NOT_FOUND);
         }
 
         // 먼저, 정적 파일 요청인지 확인
@@ -25,17 +32,18 @@ public class StaticHandler {
     }
 
     private ResponseEntity<?> handleStaticFileRequest(HttpRequest httpRequest) {
-        ResponseEntity<?> response = ResponseEntity.notFound();
 
         for (StaticFileEnum e : StaticFileEnum.values()) {
-            response = e.fetchStaticFileFromURI(httpRequest);
+            if (!httpRequest.getRequestURI().endsWith(e.getExt())) continue;
 
-            if (response.getHttpStatusCode() != HttpStatusCode.NOT_FOUND) {
-                return response;
+            byte[] t = staticFileResolver.fetchStaticFile(httpRequest.getRequestURI()).orElse(null);
+
+            if (t != null) {
+                return ResponseEntity.ok(t, e.getContentType());
             }
         }
 
-        return response;
+        return ResponseEntity.simple(HttpStatusCode.NOT_FOUND);
     }
 
     private ResponseEntity<?> handleRouteRequest(String uri) {
@@ -43,6 +51,13 @@ public class StaticHandler {
             uri = uri.substring(0, uri.length() - 1);
         }
         uri += "/index.html";
-        return StaticFileEnum.HTML.fetchStaticFile(uri);
+
+        byte[] payload = staticFileResolver.fetchStaticFile(uri).orElse(null);
+
+        if (payload == null) {
+            return ResponseEntity.simple(HttpStatusCode.NOT_FOUND);
+        }
+
+        return ResponseEntity.ok(payload, HttpContentType.HTML);
     }
 }

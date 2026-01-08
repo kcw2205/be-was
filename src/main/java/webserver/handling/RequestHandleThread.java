@@ -6,6 +6,7 @@ import webserver.http.HttpRequestParser;
 import webserver.http.data.HttpRequest;
 import webserver.http.data.HttpResponse;
 import webserver.http.enums.HttpHeaderKey;
+import webserver.http.enums.HttpStatusCode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,13 +59,13 @@ public class RequestHandleThread implements Runnable {
                     logger.debug("Time elasped : " + (endTime - startTime) + "ms");
 
                     if (httpRequest.searchHeaderAttribute(HttpHeaderKey.CONNECTION.toString()).equals("close")) {
-                        System.out.println("Closing connection");
+
                         break;
                     }
 
                 } catch (RuntimeException e) {
                     logger.error(e.getMessage(), e);
-                    out.write(ResponseEntity.internalServerError().toHttpResponse().serialize());
+                    out.write(ResponseEntity.simple(HttpStatusCode.INTERNAL_SERVER_ERROR).toHttpResponse().serialize());
                     out.flush();
                     break;
                 } catch (SocketTimeoutException e) {

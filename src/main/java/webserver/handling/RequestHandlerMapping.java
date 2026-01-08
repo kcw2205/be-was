@@ -1,6 +1,6 @@
 package webserver.handling;
 
-import webserver.handling.static_route.StaticHandler;
+import webserver.handling.statics.StaticHandler;
 import webserver.http.data.HttpRequest;
 import webserver.http.enums.HttpRequestMethod;
 

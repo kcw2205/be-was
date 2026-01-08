@@ -19,6 +19,7 @@ import java.util.Map;
  * <p>
  * 후에 멀티파트같은 부분도 파싱해서 병합해주는 것도 이곳에서 할 수 있도록 하면 좋을 듯 하다.
  */
+// TODO: 자체적으로 InputStream으로부터 `\r\n` 까지 읽어들이는 커스텀 유틸리티가 필요. 이를 이용해 InputStream만 사용하도록 개선필요.
 public class HttpRequestParser {
 
     private final Logger log = LoggerFactory.getLogger(HttpRequestParser.class);

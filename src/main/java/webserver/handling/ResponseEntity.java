@@ -1,7 +1,9 @@
 package webserver.handling;
 
 
+import webserver.http.data.Cookie;
 import webserver.http.data.HttpResponse;
+import webserver.http.enums.HttpContentType;
 import webserver.http.enums.HttpHeaderKey;
 import webserver.http.enums.HttpStatusCode;
 
@@ -15,11 +17,11 @@ public class ResponseEntity<T> {
     private final byte[] data;
     private final HttpStatusCode httpStatusCode;
     private final Map<String, String> headers = new HashMap<>();
-    private final List<String> cookies = new ArrayList<>();
+    private final List<Cookie> cookies = new ArrayList<>();
 
-    private ResponseEntity(T data, HttpStatusCode status, String contentType) {
+    private ResponseEntity(T data, HttpStatusCode status, HttpContentType contentType) {
         this.httpStatusCode = status;
-        if (contentType != null) this.headers.put(HttpHeaderKey.CONTENT_TYPE.toString(), contentType);
+        if (contentType != null) this.headers.put(HttpHeaderKey.CONTENT_TYPE.toString(), contentType.toString());
 
         // TODO: ObjectMapper 사용하기..!
         if (data instanceof String) {
@@ -36,28 +38,16 @@ public class ResponseEntity<T> {
             this.headers.put(HttpHeaderKey.CONTENT_LENGTH.toString(), String.valueOf(this.data.length));
     }
 
-    public static ResponseEntity<Void> empty(HttpStatusCode status) {
-        return new ResponseEntity<>(null, status, null);
+    public static ResponseEntity<?> simple(HttpStatusCode status) {
+        return new ResponseEntity<>(status.getStatusName(), status, HttpContentType.TEXT_PLAIN);
     }
 
-    public static <T> ResponseEntity<T> builder(T data, HttpStatusCode status, String contentType) {
+    public static <T> ResponseEntity<T> builder(T data, HttpStatusCode status, HttpContentType contentType) {
         return new ResponseEntity<T>(data, status, contentType);
     }
 
-    public static <T> ResponseEntity<T> ok(T data, String contentType) {
+    public static <T> ResponseEntity<T> ok(T data, HttpContentType contentType) {
         return new ResponseEntity<>(data, HttpStatusCode.OK, contentType);
-    }
-
-    public static ResponseEntity<?> notFound() {
-        return new ResponseEntity<>(HttpStatusCode.NOT_FOUND.getStatusName(), HttpStatusCode.NOT_FOUND, "text/plain");
-    }
-
-    public static ResponseEntity<Object> badRequest() {
-        return new ResponseEntity<>(HttpStatusCode.BAD_REQUEST.getStatusName(), HttpStatusCode.BAD_REQUEST, "text/plain");
-    }
-
-    public static ResponseEntity<Object> internalServerError() {
-        return new ResponseEntity<>(HttpStatusCode.INTERNAL_SERVER_ERROR.getStatusName(), HttpStatusCode.BAD_REQUEST, "text/plain");
     }
 
     public ResponseEntity<T> addHeader(HttpHeaderKey key, String value) {
@@ -65,19 +55,13 @@ public class ResponseEntity<T> {
         return this;
     }
 
-    // TODO: 안티패턴 개선하기
-    public ResponseEntity<T> addCookie(String key, String value, String path, boolean isHttpOnly) {
-        this.cookies.add(key + "=" + value + "; Path=" + path + "; HttpOnly=" + isHttpOnly);
+    public ResponseEntity<T> addCookie(Cookie cookie) {
+        this.cookies.add(cookie);
         return this;
     }
 
-    public ResponseEntity<T> addCookie(String key, String value, String path) {
-        this.cookies.add(key + "=" + value + "; Path=" + path);
-        return this;
-    }
-
-    public ResponseEntity<T> addCookie(String key, String value) {
-        this.cookies.add(key + "=" + value);
+    public ResponseEntity<T> addCookiePrimitive(String key, String value) {
+        this.cookies.add(new Cookie(key, value));
         return this;
     }
 
@@ -93,7 +77,7 @@ public class ResponseEntity<T> {
 
     private void addCookiesToHeader() {
         this.cookies.forEach(cookie -> {
-            this.headers.put(HttpHeaderKey.SET_COOKIE.toString(), cookie);
+            this.headers.put(HttpHeaderKey.SET_COOKIE.toString(), cookie.serialize());
         });
     }
 }
