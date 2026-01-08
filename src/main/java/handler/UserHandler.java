@@ -63,27 +63,31 @@ public class UserHandler {
 
         String sid = this.sessionManager.createSession(user);
 
+        Cookie cookie = new Cookie(SessionManager.SESSION_ID, sid);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
         return ResponseEntity
             .ok("Login success", "text/plain")
             .addCookie(SessionManager.SESSION_ID, sid, "/");
     }
 
     public ResponseEntity<?> me(HttpRequest httpRequest) {
-        String sid = httpRequest.getCookieValue(SessionManager.SESSION_ID);
-
-        log.debug("{} is user cookie value", sid);
+        Cookie sessionCookie = httpRequest.getCookieByName(SessionManager.SESSION_ID).orElse(null);
 
         // TODO: 로직이 반복되는 느낌 + empty Response 해도 괜찮을지.
-        if (sid == null) {
-            return ResponseEntity.empty(HttpStatusCode.UNAUTHORIZED);
+        if (sessionCookie == null) {
+            return ResponseEntity.simple(HttpStatusCode.UNAUTHORIZED);
         }
 
-        User user = (User) sessionManager.findById(sid);
+        log.debug("{} is user cookie value", sessionCookie.getValue());
+
+        User user = (User) sessionManager.findById(sessionCookie.getValue()).orElse(null);
 
         if (user == null) {
-            return ResponseEntity.empty(HttpStatusCode.UNAUTHORIZED);
+            return ResponseEntity.simple(HttpStatusCode.UNAUTHORIZED);
         }
 
-        return ResponseEntity.ok(UserDto.of(user), "application/json");
+        return ResponseEntity.ok(UserDto.of(user), HttpContentType.APPLICATION_JSON);
     }
 }

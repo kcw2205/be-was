@@ -5,13 +5,14 @@ import webserver.http.enums.HttpRequestMethod;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class HttpRequest {
     private final HttpRequestMethod requestMethod;
     private final String httpVersion;
     private final String requestURI;
     private final Map<String, String> headers;
-    private final Map<String, String> cookies;
+    private final Map<String, Cookie> cookies;
     private final Map<String, String> queryParameters;
     private final HttpRequestBody body;
 
@@ -32,12 +33,13 @@ public class HttpRequest {
         this.body = body;
     }
 
-    private Map<String, String> parseCookies(String str) {
-        Map<String, String> map = new HashMap<>();
+    private Map<String, Cookie> parseCookies(String str) {
+        Map<String, Cookie> map = new HashMap<>();
         for (String t : str.split(";\\s*")) {
             String[] cookiePair = t.trim().split("=", 2);
             if (cookiePair.length < 2) continue;
-            map.put(cookiePair[0].trim(), cookiePair[1].trim());
+
+            map.put(cookiePair[0].trim(), new Cookie(cookiePair[0].trim(), cookiePair[1].trim()));
         }
 
         return map;
@@ -56,8 +58,8 @@ public class HttpRequest {
         return this.headers.getOrDefault(attributeName, null);
     }
 
-    public String getCookieValue(String attributeName) {
-        return cookies.getOrDefault(attributeName, null);
+    public Optional<Cookie> getCookieByName(String attributeName) {
+        return Optional.ofNullable(cookies.getOrDefault(attributeName, null));
     }
 
     public HttpRequestBody getBody() {
