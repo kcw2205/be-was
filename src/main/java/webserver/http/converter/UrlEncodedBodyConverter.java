@@ -13,7 +13,7 @@ public class UrlEncodedBodyConverter implements DataMapConverter {
     @Override
     public Map<String, String> convertFromBody(HttpRequestBody body) {
         try {
-            String queryStr = new String(body.getData(), StandardCharsets.UTF_8);
+            String queryStr = new String(body.data(), StandardCharsets.UTF_8);
             Map<String, String> formData = new HashMap<>();
 
             for (String query : queryStr.split("&")) {

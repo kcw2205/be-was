@@ -31,7 +31,7 @@ public class UserHandler {
     public ResponseEntity<UserDto> createUser(HttpRequest httpRequest) {
 
         UserDto userDto = httpRequest
-            .getBody()
+            .body()
             .getDataAs(new UrlEncodedBodyConverter(), UserDto.class);
 
         User user = new User(
@@ -52,7 +52,7 @@ public class UserHandler {
 
     public ResponseEntity<?> login(HttpRequest httpRequest) {
         LoginDto loginDto = httpRequest
-            .getBody()
+            .body()
             .getDataAs(new UrlEncodedBodyConverter(), LoginDto.class);
 
         User user = userDatabase.findUserById(loginDto.getUserId());

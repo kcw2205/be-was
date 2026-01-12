@@ -6,18 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
-public class HttpResponse {
-    private final HttpStatusCode status;
-    private final String httpVersion;
-    private final Map<String, String> headers;
-    private final byte[] body;
-
-    public HttpResponse(HttpStatusCode status, String httpVersion, Map<String, String> headers, byte[] body) {
-        this.status = status;
-        this.httpVersion = httpVersion;
-        this.headers = headers;
-        this.body = body;
-    }
+public record HttpResponse(HttpStatusCode status, String httpVersion, Map<String, String> headers, byte[] body) {
 
     public byte[] serialize() {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {

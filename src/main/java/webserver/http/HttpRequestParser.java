@@ -1,9 +1,9 @@
 package webserver.http;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import webserver.http.data.Cookie;
 import webserver.http.data.HttpRequest;
 import webserver.http.data.HttpRequestBody;
+import webserver.http.enums.HttpHeaderKey;
 import webserver.http.enums.HttpRequestMethod;
 
 import java.io.BufferedReader;
@@ -32,6 +32,7 @@ public class HttpRequestParser {
 
         int contentLength = Integer.parseInt(headers.getOrDefault("content-length", "0"));
         String contentType = headers.get("content-type");
+        String cookieStr = headers.getOrDefault(HttpHeaderKey.COOKIE.toString().toLowerCase(), "");
 
         String[] requestUri = requestMethodAndURI[1].split("\\?");
 
@@ -40,6 +41,7 @@ public class HttpRequestParser {
             requestUri[0],
             requestMethodAndURI[2],
             headers,
+            parseCookies(cookieStr),
             parseQueryParameters(URLDecoder.decode(requestMethodAndURI[1], "UTF-8")),
             contentLength != 0 ? parseBody(contentLength, bufferedReader) : HttpRequestBody.empty()
         );
@@ -124,5 +126,16 @@ public class HttpRequestParser {
         return queryParameters;
     }
 
+    private Map<String, Cookie> parseCookies(String str) {
+        Map<String, Cookie> map = new HashMap<>();
+        for (String t : str.split(";\\s*")) {
+            String[] cookiePair = t.trim().split("=", 2);
+            if (cookiePair.length < 2) continue;
+
+            map.put(cookiePair[0].trim(), new Cookie(cookiePair[0].trim(), cookiePair[1].trim()));
+        }
+
+        return map;
+    }
 
 }

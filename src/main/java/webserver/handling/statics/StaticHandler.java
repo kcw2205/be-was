@@ -28,15 +28,15 @@ public class StaticHandler {
 
         // 그 이후에 정적 경로 라우팅이라면, 웹 디렉토리 인덱스 html 파일 반환
         // 그럼에도 아니면 404 에러)를 리턴 하도록 수행
-        return handleRouteRequest(httpRequest.getRequestURI());
+        return handleRouteRequest(httpRequest.requestURI());
     }
 
     private ResponseEntity<?> handleStaticFileRequest(HttpRequest httpRequest) {
 
         for (StaticFileEnum e : StaticFileEnum.values()) {
-            if (!httpRequest.getRequestURI().endsWith(e.getExt())) continue;
+            if (!httpRequest.requestURI().endsWith(e.getExt())) continue;
 
-            byte[] t = staticFileResolver.fetchStaticFile(httpRequest.getRequestURI()).orElse(null);
+            byte[] t = staticFileResolver.fetchStaticFile(httpRequest.requestURI()).orElse(null);
 
             if (t != null) {
                 return ResponseEntity.ok(t, e.getContentType());

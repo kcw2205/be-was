@@ -6,16 +6,7 @@ import webserver.http.converter.HttpBodyConverter;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-public class HttpRequestBody {
-    private final byte[] data;
-
-    public HttpRequestBody(byte[] data) {
-        this.data = data;
-    }
-
-    public byte[] getData() {
-        return data;
-    }
+public record HttpRequestBody(byte[] data) {
 
     public <T> T getData(HttpBodyConverter<T> converter) {
         return converter.convertFromBody(this);
