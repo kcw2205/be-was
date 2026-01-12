@@ -12,7 +12,8 @@ import webserver.http.enums.HttpStatusCode;
 
 import java.util.HashMap;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RequestHandlerMappingTest {
 
@@ -58,9 +59,9 @@ class RequestHandlerMappingTest {
 
         // 가짜 요청 생성
         HttpRequest request = new HttpRequest(
-                method, path, "HTTP/1.1",
-                new HashMap<>(), new HashMap<>(),
-                new HttpRequestBody(new byte[0])
+            method, path, "HTTP/1.1",
+            new HashMap<>(), new HashMap<>(), new HashMap<>(),
+            new HttpRequestBody(new byte[0])
         );
 
         // when
@@ -81,9 +82,9 @@ class RequestHandlerMappingTest {
 
         // 가짜 요청 생성
         HttpRequest request = new HttpRequest(
-                method, path, "HTTP/1.1",
-                new HashMap<>(), new HashMap<>(),
-                new HttpRequestBody(new byte[0])
+            method, path, "HTTP/1.1",
+            new HashMap<>(), new HashMap<>(), new HashMap<>(),
+            new HttpRequestBody(new byte[0])
         );
 
         // when
@@ -99,15 +100,15 @@ class RequestHandlerMappingTest {
     void differentiateMethod() {
         // given
         String path = "/api/resource";
-        
+
         // GET만 등록
         mapping.registerRequestHandler(path, HttpRequestMethod.GET, request -> ResponseEntity.ok(new byte[0], null));
 
         // POST로 요청
         HttpRequest request = new HttpRequest(
-                HttpRequestMethod.POST, path, "HTTP/1.1",
-                new HashMap<>(), new HashMap<>(),
-                new HttpRequestBody(new byte[0])
+            HttpRequestMethod.POST, path, "HTTP/1.1",
+            new HashMap<>(), new HashMap<>(), new HashMap<>(),
+            new HttpRequestBody(new byte[0])
         );
 
         // when
