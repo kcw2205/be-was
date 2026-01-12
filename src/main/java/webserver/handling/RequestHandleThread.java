@@ -15,7 +15,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 
 public class RequestHandleThread implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(RequestHandleThread.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestHandleThread.class);
 
     private final Socket connection;
     private final HttpRequestParser httpRequestParser;
@@ -32,7 +32,7 @@ public class RequestHandleThread implements Runnable {
     }
 
     public void run() {
-        logger.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(),
+        LOGGER.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(),
             connection.getPort());
 
         try (InputStream in = connection.getInputStream();
@@ -55,8 +55,8 @@ public class RequestHandleThread implements Runnable {
 
                     long endTime = System.currentTimeMillis();
 
-                    logger.debug("Successfully handled request of " + httpRequest.getHttpMethod() + " " + httpRequest.getRequestURI());
-                    logger.debug("Time elasped : " + (endTime - startTime) + "ms");
+                    LOGGER.debug("Successfully handled request of " + httpRequest.getHttpMethod() + " " + httpRequest.requestURI());
+                    LOGGER.debug("Time elasped : " + (endTime - startTime) + "ms");
 
                     if (httpRequest.searchHeaderAttribute(HttpHeaderKey.CONNECTION.toString()).equals("close")) {
 
@@ -64,7 +64,7 @@ public class RequestHandleThread implements Runnable {
                     }
 
                 } catch (RuntimeException e) {
-                    logger.error(e.getMessage(), e);
+                    LOGGER.error(e.getMessage(), e);
                     out.write(ResponseEntity.simple(HttpStatusCode.INTERNAL_SERVER_ERROR).toHttpResponse().serialize());
                     out.flush();
                     break;
@@ -77,7 +77,7 @@ public class RequestHandleThread implements Runnable {
             }
 
         } catch (IOException e) {
-            logger.debug("Socket IO Exception while reading request stream", e);
+            LOGGER.debug("Socket IO Exception while reading request stream", e);
         }
 
     }

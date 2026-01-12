@@ -22,8 +22,6 @@ import java.util.Map;
 // TODO: 자체적으로 InputStream으로부터 `\r\n` 까지 읽어들이는 커스텀 유틸리티가 필요. 이를 이용해 InputStream만 사용하도록 개선필요.
 public class HttpRequestParser {
 
-    private final Logger log = LoggerFactory.getLogger(HttpRequestParser.class);
-
     public HttpRequest parseRequestFromStream(InputStream inputStream) throws IOException {
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));

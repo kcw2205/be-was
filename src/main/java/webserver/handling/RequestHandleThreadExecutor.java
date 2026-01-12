@@ -12,11 +12,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class RequestHandleThreadExecutor extends ThreadPoolExecutor {
-    private static final Logger logger = LoggerFactory.getLogger(RequestHandleThreadExecutor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestHandleThreadExecutor.class);
     private final HttpRequestParser httpRequestParser;
     private final RequestDispatcher requestDispatcher;
 
-    // TODO: 어.....
     public RequestHandleThreadExecutor(
         int corePoolSize,
         int maximumPoolSize,
@@ -36,7 +35,7 @@ public class RequestHandleThreadExecutor extends ThreadPoolExecutor {
         try {
             this.execute(new RequestHandleThread(socket, httpRequestParser, requestDispatcher));
         } catch (RejectedExecutionException e) {
-            logger.error("RejectedExecutionException in RequestHandleThreadExecutor", e);
+            LOGGER.error("RejectedExecutionException in RequestHandleThreadExecutor", e);
         }
     }
 }

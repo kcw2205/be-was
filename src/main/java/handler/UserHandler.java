@@ -17,7 +17,7 @@ import webserver.session.SessionManager;
 
 public class UserHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(UserHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserHandler.class);
 
     private final UserDatabase userDatabase;
     private final SessionManager sessionManager;
@@ -43,7 +43,7 @@ public class UserHandler {
 
         userDatabase.addUser(user);
 
-        log.debug("{} added to database.", user.toString());
+        LOGGER.debug("{} added to database.", user);
 
         return ResponseEntity
             .builder(UserDto.of(user), HttpStatusCode.REDIRECT, HttpContentType.APPLICATION_JSON)
@@ -99,7 +99,7 @@ public class UserHandler {
             return ResponseEntity.simple(HttpStatusCode.UNAUTHORIZED);
         }
 
-        log.debug("{} is user cookie value", sessionCookie.getValue());
+        LOGGER.debug("{} is user cookie value", sessionCookie.getValue());
 
         User user = (User) sessionManager.findById(sessionCookie.getValue()).orElse(null);
 
