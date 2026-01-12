@@ -12,23 +12,23 @@ import webserver.template.HtmlComponent;
 
 import java.nio.charset.StandardCharsets;
 
+class MenuProp {
+    private String name;
+
+    public MenuProp(String name) {
+        this.name = name;
+    }
+}
+
+class IndexProp {
+    private HtmlComponent<?> menuComponent;
+
+    public IndexProp(HtmlComponent<?> menuComponent) {
+        this.menuComponent = menuComponent;
+    }
+}
+
 public class IndexHandler {
-
-    static class MenuProp {
-        private String name;
-
-        public MenuProp(String name) {
-            this.name = name;
-        }
-    }
-
-    static class IndexProp {
-        private HtmlComponent<?> menuComponent;
-
-        public IndexProp(HtmlComponent<?> menuComponent) {
-            this.menuComponent = menuComponent;
-        }
-    }
 
     private final StaticFileResolver staticFileResolver;
     private final SessionManager sessionManager;

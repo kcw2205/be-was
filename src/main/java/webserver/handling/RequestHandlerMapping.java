@@ -28,7 +28,7 @@ public class RequestHandlerMapping {
     }
 
     public RequestHandler getRequestHandler(HttpRequest httpRequest) {
-        String fullRequestURI = httpRequest.getHttpMethod().toString() + " " + httpRequest.getRequestURI();
+        String fullRequestURI = httpRequest.getHttpMethod().toString() + " " + httpRequest.requestURI();
 
         return this.requestHandlerMap.getOrDefault(fullRequestURI, staticHandler::handleStaticRouteRequest);
     }

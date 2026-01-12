@@ -13,7 +13,7 @@ import java.util.Map;
 // .tpl 로 끝나는 별도의 html 프로세서
 // 자식 Template 도 받을 수 있도록 하도록..
 public class HtmlComponent<T> {
-    private final Logger log = LoggerFactory.getLogger(HtmlComponent.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(HtmlComponent.class);
     private final T fields;
     private final String rawTemplate;
 
@@ -93,7 +93,7 @@ public class HtmlComponent<T> {
             } else {
                 // 데이터가 없으면 빈 문자열 혹은 디버그용 텍스트 처리
                 // sb.append("");
-                log.warn("Warn: No value found for key: {}", key);
+                LOGGER.warn("Warn: No value found for key: {}", key);
             }
 
             // 커서 이동 (}} 뒤로)

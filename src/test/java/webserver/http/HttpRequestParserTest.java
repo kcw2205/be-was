@@ -35,22 +35,22 @@ class HttpRequestParserTest {
 
         // then
         assertAll(
-            () -> assertEquals("POST", request.getRequestMethod().name()),
-            () -> assertEquals("/user/create", request.getRequestURI()),
+            () -> assertEquals("POST", request.requestMethod().name()),
+            () -> assertEquals("/user/create", request.requestURI()),
 
             // Query Parameter 확인
-            () -> assertEquals("1.1", request.getQueryParameters().get("version")),
+            () -> assertEquals("1.1", request.queryParameters().get("version")),
 
             // Version 확인
-            () -> assertEquals("HTTP/1.1", request.getHttpVersion()),
+            () -> assertEquals("HTTP/1.1", request.httpVersion()),
 
             // Header 확인
             () -> assertEquals("localhost:8080", request.searchHeaderAttribute("Host")),
             () -> assertEquals("application/x-www-form-urlencoded", request.searchHeaderAttribute("Content-Type")),
 
             // Body 확인
-            () -> assertNotNull(request.getBody()),
-            () -> assertArrayEquals(requestBody.getBytes(), request.getBody().getData())
+            () -> assertNotNull(request.body()),
+            () -> assertArrayEquals(requestBody.getBytes(), request.body().data())
         );
     }
 
@@ -106,11 +106,11 @@ class HttpRequestParserTest {
         HttpRequest request = httpRequestParser.parseRequestFromStream(in);
 
         // then
-        assertEquals("/index.html", request.getRequestURI());
+        assertEquals("/index.html", request.requestURI());
 
         // 중요: 구현 코드에서 null이 아닌 HttpRequestBody.empty()를 반환하므로 assertNotNull이 맞음
-        assertNotNull(request.getBody());
+        assertNotNull(request.body());
         // Body 내용이 비어있는지 확인 (HttpRequestBody 구현에 따라 메소드가 다를 수 있음, 예: getData().length == 0)
-        assertEquals(0, request.getBody().getData().length);
+        assertEquals(0, request.body().data().length);
     }
 }
