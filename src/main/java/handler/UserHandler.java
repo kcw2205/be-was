@@ -28,11 +28,15 @@ public class UserHandler {
     }
 
     // TODO: DTO 검증로직 추가
-    public ResponseEntity<UserDto> createUser(HttpRequest httpRequest) {
+    public ResponseEntity<?> createUser(HttpRequest httpRequest) {
 
         UserDto userDto = httpRequest
             .body()
             .getDataAs(new UrlEncodedBodyConverter(), UserDto.class);
+
+        if (!validateUserDto(userDto)) {
+            return ResponseEntity.simple(HttpStatusCode.BAD_REQUEST);
+        }
 
         User user = new User(
             userDto.getUserId(),
@@ -108,5 +112,14 @@ public class UserHandler {
         }
 
         return ResponseEntity.ok(UserDto.of(user), HttpContentType.APPLICATION_JSON);
+    }
+
+    private boolean validateUserDto(UserDto userDto) {
+        boolean idValid = userDto.getUserId() != null && !userDto.getUserId().isEmpty();
+        boolean nameValid = userDto.getName() != null && !userDto.getName().isEmpty();
+        boolean emailValid = userDto.getEmail() != null && !userDto.getEmail().isEmpty();
+        boolean passwordValid = userDto.getPassword() != null && !userDto.getPassword().isEmpty();
+
+        return idValid && nameValid && emailValid && passwordValid;
     }
 }
