@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link href="./reset.css" rel="stylesheet" />
+    <link href="./global.css" rel="stylesheet" />
+    <link href="./main.css" rel="stylesheet" />
+    <style>
+        .error-content {
+            text-align: center;
+            padding: 80px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .error-content__code {
+            font-size: 80px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        .error-content__title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #555;
+        }
+        .error-content__desc {
+            font-size: 16px;
+            color: #777;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+        .error-content__actions {
+            display: flex;
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <a href="/"><img alt="홈으로" src="./img/signiture.svg" /></a>
+        <ul class="header__menu">
+            <li class="header__menu__item">
+                <a class="btn btn_contained btn_size_s" href="/login">로그인</a>
+            </li>
+            <li class="header__menu__item">
+                <a class="btn btn_ghost btn_size_s" href="/registration">회원 가입</a>
+            </li>
+        </ul>
+    </header>
+
+    <div class="wrapper">
+        <main class="error-content">
+            <div class="error-content__code">404</div>
+
+            <h1 class="error-content__title">페이지를 찾을 수 없습니다.</h1>
+
+            <p class="error-content__desc">
+                요청하신 페이지가 제거되었거나, 이름이 변경되었을 수 있습니다.<br />
+                입력하신 주소가 정확한지 다시 한번 확인해주세요.
+            </p>
+
+            <div class="error-content__actions">
+                <a class="btn btn_ghost btn_size_m" href="javascript:history.back();">
+                    이전 페이지로
+                </a>
+                <a class="btn btn_contained btn_size_m" href="/">
+                    홈으로 이동
+                </a>
+            </div>
+        </main>
+
+        <nav class="nav">
+            <ul class="nav__menu">
+                <li class="nav__menu__item" style="flex: 1; text-align: center;">
+                    <p style="color: #999; font-size: 14px;">&copy; 2024 Your Service Name. All rights reserved.</p>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+</body>
+</html>
