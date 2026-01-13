@@ -1,4 +1,4 @@
-package handler.domain;
+package handler.api;
 
 import dao.UserDAO;
 import dto.LoginDto;
