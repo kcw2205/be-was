@@ -38,16 +38,20 @@ public class ResponseEntity<T> {
             this.headers.put(HttpHeaderKey.CONTENT_LENGTH.toString(), String.valueOf(this.data.length));
     }
 
-    public static ResponseEntity<?> simple(HttpStatusCode status) {
-        return new ResponseEntity<>(status.getStatusName(), status, HttpContentType.TEXT_PLAIN);
+    public static ResponseEntity<Void> simple(HttpStatusCode status) {
+        return new ResponseEntity<>(null, status, HttpContentType.TEXT_PLAIN);
     }
 
-    public static <T> ResponseEntity<T> builder(T data, HttpStatusCode status, HttpContentType contentType) {
+    public static <T> ResponseEntity<T> create(T data, HttpStatusCode status, HttpContentType contentType) {
         return new ResponseEntity<T>(data, status, contentType);
     }
 
     public static <T> ResponseEntity<T> ok(T data, HttpContentType contentType) {
         return new ResponseEntity<>(data, HttpStatusCode.OK, contentType);
+    }
+
+    public static ResponseEntity<Void> ok() {
+        return new ResponseEntity<>(null, HttpStatusCode.OK, HttpContentType.NONE);
     }
 
     public ResponseEntity<T> addHeader(HttpHeaderKey key, String value) {
