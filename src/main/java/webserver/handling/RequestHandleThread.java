@@ -55,7 +55,7 @@ public class RequestHandleThread implements Runnable {
 
                     long endTime = System.currentTimeMillis();
 
-                    LOGGER.debug("Successfully handled request of " + httpRequest.getHttpMethod() + " " + httpRequest.requestURI());
+                    LOGGER.debug("Successfully handled request of " + httpRequest.requestMethod() + " " + httpRequest.requestURI());
                     LOGGER.debug("Time elasped : " + (endTime - startTime) + "ms");
 
                     if (httpRequest.searchHeaderAttribute(HttpHeaderKey.CONNECTION.toString()).equals("close")) {

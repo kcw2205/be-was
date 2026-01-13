@@ -22,8 +22,4 @@ public record HttpRequest(
     public Optional<Cookie> getCookieByName(String attributeName) {
         return Optional.ofNullable(cookies.getOrDefault(attributeName, null));
     }
-
-    public HttpRequestMethod getHttpMethod() {
-        return this.requestMethod;
-    }
 }
