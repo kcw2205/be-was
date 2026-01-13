@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <link href="../reset.css" rel="stylesheet"/>
     <link href="../global.css" rel="stylesheet"/>
 </head>
@@ -27,25 +27,25 @@
             <div class="textfield textfield_size_s">
                 <p class="title_textfield">아이디</p>
                 <input
-                        id="username"
-                        class="input_textfield"
-                        placeholder="아이디를 입력해주세요"
                         autocomplete="username"
+                        class="input_textfield"
+                        id="username"
+                        placeholder="아이디를 입력해주세요"
                 />
             </div>
             <div class="textfield textfield_size_s">
                 <p class="title_textfield">비밀번호</p>
                 <input
-                        id="password"
-                        class="input_textfield"
-                        type="password"
-                        placeholder="비밀번호를 입력해주세요"
                         autocomplete="current-password"
+                        class="input_textfield"
+                        id="password"
+                        placeholder="비밀번호를 입력해주세요"
+                        type="password"
                 />
             </div>
             <button
-                    id="login-btn"
                     class="btn btn_contained btn_size_m"
+                    id="login-btn"
                     style="margin-top: 24px"
                     type="button"
             >
@@ -90,7 +90,7 @@
 
                 if (response.ok) {
                     window.location.href = "/";
-                } else if (response.status === 403) {
+                } else if (response.status >= 400 && response.status < 500) {
                     const errorMessage = await response.text();
                     alert(errorMessage || "로그인 실패");
                 } else {
