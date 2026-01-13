@@ -2,10 +2,10 @@ package webserver;
 
 import dao.UserDAO;
 import dao.impl.UserDAOInMemory;
-import handler.domain.IndexHandler;
-import handler.domain.UserHandler;
+import handler.api.UserHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import view.ViewHandler;
 import webserver.handling.RequestDispatcher;
 import webserver.handling.RequestHandleThreadExecutor;
 import webserver.handling.RequestHandlerMapping;
@@ -63,7 +63,7 @@ public class WebServer {
 
         // user-defined handlers
         UserHandler userHandler = new UserHandler(userDAO, sessionManager);
-        IndexHandler indexHandler = new IndexHandler(staticFileResolver, sessionManager);
+        ViewHandler viewHandler = new ViewHandler(sessionManager);
 
         // request dispatcher
         RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerMapping);
@@ -74,7 +74,7 @@ public class WebServer {
         requestHandlerMapping.registerRequestHandler("/user/login", HttpRequestMethod.POST, userHandler::login);
         requestHandlerMapping.registerRequestHandler("/user/logout", HttpRequestMethod.POST, userHandler::logout);
         requestHandlerMapping.registerRequestHandler("/user/me", HttpRequestMethod.GET, userHandler::me);
-        requestHandlerMapping.registerRequestHandler("/", HttpRequestMethod.GET, indexHandler::index);
+        requestHandlerMapping.registerRequestHandler("/", HttpRequestMethod.GET, viewHandler::indexPage);
 
 
         return new RequestHandleThreadExecutor(
