@@ -1,4 +1,4 @@
-package handler;
+package handler.domain;
 
 import model.User;
 import webserver.handling.ResponseEntity;
@@ -13,7 +13,7 @@ import webserver.template.HtmlComponent;
 import java.nio.charset.StandardCharsets;
 
 class MenuProp {
-    private String name;
+    private final String name;
 
     public MenuProp(String name) {
         this.name = name;
@@ -21,7 +21,7 @@ class MenuProp {
 }
 
 class IndexProp {
-    private HtmlComponent<?> menuComponent;
+    private final HtmlComponent<?> menuComponent;
 
     public IndexProp(HtmlComponent<?> menuComponent) {
         this.menuComponent = menuComponent;
@@ -56,6 +56,6 @@ public class IndexHandler {
 
         HtmlComponent<?> indexPage = HtmlComponent.load("index", new IndexProp(menuComponent));
 
-        return ResponseEntity.builder(indexPage.toHtml().getBytes(StandardCharsets.UTF_8), HttpStatusCode.OK, HttpContentType.HTML);
+        return ResponseEntity.create(indexPage.toHtml().getBytes(StandardCharsets.UTF_8), HttpStatusCode.OK, HttpContentType.HTML);
     }
 }
