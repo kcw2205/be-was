@@ -19,10 +19,10 @@ public class RequestDispatcher {
      * HttpRequest 를 확인하여 등록된 요청 형식에 대해 HttpResponse를 사전에 만들어주는 함수
      */
     public ResponseEntity<?> dispatch(HttpRequest httpRequest) {
-        RequestHandler interceptor = this.requestHandlerMapping
-            .getRequestHandler(httpRequest);
+
         try {
-            return interceptor.handle(httpRequest);
+            RequestHandler handler = this.requestHandlerMapping.getRequestHandler(httpRequest);
+            return handler.handle(httpRequest);
         } catch (HttpException e) {
             // TODO: 당장은 Message 만 반환. 커스텀할 수 있도록 하는 것은 나중에 제공.
             return ResponseEntity.create(e.getMessage(), e.getStatusCode(), HttpContentType.TEXT_PLAIN);
