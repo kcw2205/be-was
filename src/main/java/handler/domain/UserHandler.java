@@ -1,8 +1,9 @@
-package handler;
+package handler.domain;
 
-import db.UserDatabase;
+import dao.UserDAO;
 import dto.LoginDto;
 import dto.UserDto;
+import message.UserHandlerExceptions;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,10 @@ public class UserHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserHandler.class);
 
     private final UserDatabase userDatabase;
+    // TODO: Validation 로직을 나눌지 고민해보기
+    private static final int LEAST_PARAMETER_LENGTH = 4;
+
+    private final UserDAO userDAO;
     private final SessionManager sessionManager;
 
     public UserHandler(UserDatabase userDatabase, SessionManager sessionManager) {

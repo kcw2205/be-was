@@ -1,9 +1,9 @@
 package webserver;
 
-import db.UserDatabase;
-import db.impl.UserDatabaseImpl;
-import handler.IndexHandler;
-import handler.UserHandler;
+import dao.UserDAO;
+import dao.impl.UserDAOInMemory;
+import handler.domain.IndexHandler;
+import handler.domain.UserHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.handling.RequestDispatcher;
@@ -55,14 +55,14 @@ public class WebServer {
     private static RequestHandleThreadExecutor getRequestHandleThreadExecutor() {
         HttpRequestParser httpRequestParser = new HttpRequestParser();
         StaticFileResolver staticFileResolver = new StaticFileResolver();
-        UserDatabase userDatabase = new UserDatabaseImpl();
+        UserDAO userDAO = new UserDAOInMemory();
         SessionManager sessionManager = new SessionManager();
         // static handlers
         StaticHandler staticHandler = new StaticHandler(staticFileResolver);
         RequestHandlerMapping requestHandlerMapping = new RequestHandlerMapping(staticHandler);
 
         // user-defined handlers
-        UserHandler userHandler = new UserHandler(userDatabase, sessionManager);
+        UserHandler userHandler = new UserHandler(userDAO, sessionManager);
         IndexHandler indexHandler = new IndexHandler(staticFileResolver, sessionManager);
 
         // request dispatcher
