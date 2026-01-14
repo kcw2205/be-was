@@ -3,13 +3,12 @@ package webserver.http;
 import webserver.http.data.Cookie;
 import webserver.http.data.HttpRequest;
 import webserver.http.data.HttpRequestBody;
+import webserver.http.enums.HttpContentType;
 import webserver.http.enums.HttpHeaderKey;
 import webserver.http.enums.HttpRequestMethod;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,83 +22,58 @@ import java.util.Map;
 public class HttpRequestParser {
 
     public HttpRequest parseRequestFromStream(InputStream inputStream) throws IOException {
+        // 1. 첫 줄 파싱 (readLine 직접 구현체 사용)
+        String firstLine = readLine(inputStream);
+        if (firstLine == null) throw new IOException("Invalid HTTP Request");
+        String[] requestMethodAndURI = firstLine.split(" ");
 
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        // 2. 헤더 파싱
+        Map<String, String> headers = parseHeader(inputStream);
 
-        // TODO: null 로 넣는게 좋은 방법일까? 다만 굳이 생성자 오버로딩을 해야할까?
-        String[] requestMethodAndURI = parseFirstLine(bufferedReader);
-        Map<String, String> headers = parseHeader(bufferedReader);
-
+        // 3. 메타데이터 추출
         int contentLength = Integer.parseInt(headers.getOrDefault("content-length", "0"));
-        String contentType = headers.get("content-type");
+        HttpContentType contentType = HttpContentType.fromMimeType(headers.get("content-type"));
         String cookieStr = headers.getOrDefault(HttpHeaderKey.COOKIE.toString().toLowerCase(), "");
+        String[] uriParts = requestMethodAndURI[1].split("\\?");
 
-        String[] requestUri = requestMethodAndURI[1].split("\\?");
+        // 4. 바디 파싱 (바이트 직접 읽기)
+        HttpRequestBody body = (contentLength > 0)
+            ? parseBody(contentLength, inputStream)
+            : HttpRequestBody.empty();
 
         return new HttpRequest(
             HttpRequestMethod.valueOf(requestMethodAndURI[0]),
-            requestUri[0],
+            uriParts[0],
             requestMethodAndURI[2],
+            contentType,
             headers,
             parseCookies(cookieStr),
             parseQueryParameters(URLDecoder.decode(requestMethodAndURI[1], "UTF-8")),
-            contentLength != 0 ? parseBody(contentLength, bufferedReader) : HttpRequestBody.empty()
+            body
         );
     }
 
-    private String[] parseFirstLine(BufferedReader bufferedReader) throws IOException {
-        String line = bufferedReader.readLine();
-
-        if (line == null) {
-            throw new IOException("Invalid HTTP Request");
-        }
-
-        String[] requestMethodAndURI = line.split(" ");
-
-        if (requestMethodAndURI.length != 3) {
-            throw new IOException("Invalid request method");
-        }
-
-        return requestMethodAndURI;
-    }
-
-    private Map<String, String> parseHeader(BufferedReader bufferedReader) throws IOException {
+    private Map<String, String> parseHeader(InputStream in) throws IOException {
         Map<String, String> map = new HashMap<>();
-
-        String line = bufferedReader.readLine();
-
-        while (line != null) {
-
-            if (line.isEmpty()) { // 빈 라인을 찾았을 경우 Header 의 끝이다.
-                return map;
-            }
-
+        String line;
+        while ((line = readLine(in)) != null && !line.isEmpty()) {
             String[] tokens = line.split(":", 2);
-
-            if (tokens.length != 2) {
-                throw new IOException("Invalid Request Format.");
+            if (tokens.length == 2) {
+                map.put(tokens[0].toLowerCase().trim(), tokens[1].trim());
             }
-
-            map.put(tokens[0].toLowerCase(), tokens[1].trim());
-
-            line = bufferedReader.readLine();
         }
-
         return map;
-
     }
 
-    private HttpRequestBody parseBody(int contentLength, BufferedReader bufferedReader) throws IOException {
-        char[] cbuf = new char[contentLength];
+    private HttpRequestBody parseBody(int contentLength, InputStream in) throws IOException {
         byte[] bytes = new byte[contentLength];
-        bufferedReader.read(cbuf, 0, contentLength);
-
-        for (int i = 0; i < contentLength; i++) {
-            bytes[i] = (byte) cbuf[i];
+        int totalRead = 0;
+        while (totalRead < contentLength) {
+            int read = in.read(bytes, totalRead, contentLength - totalRead);
+            if (read == -1) break;
+            totalRead += read;
         }
-
         return new HttpRequestBody(bytes);
-
     }
 
     // TODO: UrlEncodeParser 활용하기
@@ -138,4 +112,20 @@ public class HttpRequestParser {
         return map;
     }
 
+
+    private String readLine(InputStream in) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        int b;
+        while ((b = in.read()) != -1) {
+            if (b == '\r') {
+                int next = in.read();
+                if (next == '\n') break;
+                sb.append((char) b).append((char) next);
+            } else {
+                sb.append((char) b);
+            }
+        }
+        if (b == -1 && sb.isEmpty()) return null;
+        return sb.toString();
+    }
 }
