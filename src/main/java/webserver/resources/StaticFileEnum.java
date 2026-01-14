@@ -1,4 +1,4 @@
-package webserver.handling.statics;
+package webserver.resources;
 
 import webserver.http.enums.HttpContentType;
 
