@@ -1,18 +1,34 @@
 package webserver;
 
+import dao.ArticleDAO;
+import dao.CommentDAO;
 import dao.UserDAO;
-import dao.impl.UserDAOInMemory;
-import handler.api.UserHandler;
+import dao.impl.h2.ArticleDAOH2;
+import dao.impl.h2.CommentDAOH2;
+import dao.impl.h2.UserDAOH2;
+import db.H2DatabaseConfig;
+import db.JDBCConnectionManager;
+import handler.ImageUploadHandler;
+import handler.UserHandler;
+import handler.ViewHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import view.ViewHandler;
+import service.ArticleService;
+import service.CommentService;
+import service.ImageUploadService;
+import service.UserService;
+import service.impl.ArticleServiceImpl;
+import service.impl.CommentServiceImpl;
+import service.impl.ImageUploadServiceImpl;
+import service.impl.UserServiceImpl;
 import webserver.handling.RequestDispatcher;
 import webserver.handling.RequestHandleThreadExecutor;
 import webserver.handling.RequestHandlerMapping;
-import webserver.handling.statics.StaticFileResolver;
-import webserver.handling.statics.StaticHandler;
 import webserver.http.HttpRequestParser;
 import webserver.http.enums.HttpRequestMethod;
+import webserver.resources.ImageUploadWorker;
+import webserver.resources.StaticFileResolver;
+import webserver.resources.StaticHandler;
 import webserver.session.SessionManager;
 
 import java.net.ServerSocket;
@@ -51,32 +67,55 @@ public class WebServer {
         }
     }
 
-    // DI 해준 다음 쓰레드풀 실행객체 반환
+    // TODO: DI 해준 다음 쓰레드풀 실행객체 반환
+    // TODO: 강하게 결합된 RequestHandling 로직 책임 위주로 분리하기
     private static RequestHandleThreadExecutor getRequestHandleThreadExecutor() {
+        // webserver request handling dependencies
         HttpRequestParser httpRequestParser = new HttpRequestParser();
         StaticFileResolver staticFileResolver = new StaticFileResolver();
-        UserDAO userDAO = new UserDAOInMemory();
-        SessionManager sessionManager = new SessionManager();
+        ImageUploadWorker imageUploadWorker = new ImageUploadWorker();
+
+        // database related dependencies
+        H2DatabaseConfig h2DatabaseConfig = new H2DatabaseConfig();
+        JDBCConnectionManager jdbcConnectionManager = new JDBCConnectionManager();
+
         // static handlers
         StaticHandler staticHandler = new StaticHandler(staticFileResolver);
         RequestHandlerMapping requestHandlerMapping = new RequestHandlerMapping(staticHandler);
 
-        // user-defined handlers
-        UserHandler userHandler = new UserHandler(userDAO, sessionManager);
-        ViewHandler viewHandler = new ViewHandler(sessionManager);
-
         // request dispatcher
         RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerMapping);
 
+        // user-defined data access objects
+        UserDAO userDAO = new UserDAOH2(h2DatabaseConfig, jdbcConnectionManager);
+        ArticleDAO articleDAO = new ArticleDAOH2(h2DatabaseConfig, jdbcConnectionManager);
+        CommentDAO commentDAO = new CommentDAOH2(h2DatabaseConfig, jdbcConnectionManager);
+        SessionManager sessionManager = new SessionManager();
 
-        // handler-mapping
+
+        // user-defined service layers
+        UserService userService = new UserServiceImpl(userDAO, sessionManager);
+        ArticleService articleService = new ArticleServiceImpl(articleDAO);
+        CommentService commentService = new CommentServiceImpl(commentDAO, userDAO);
+        ImageUploadService imageUploadService = new ImageUploadServiceImpl(imageUploadWorker);
+
+        // user-defined handlers
+
+        UserHandler userHandler = new UserHandler(userService);
+        ViewHandler viewHandler = new ViewHandler(staticHandler, userService, articleService, commentService);
+        ImageUploadHandler imageUploadHandler = new ImageUploadHandler(imageUploadService);
+
+        // do handler-mapping
         requestHandlerMapping.registerRequestHandler("/user/create", HttpRequestMethod.POST, userHandler::createUser);
         requestHandlerMapping.registerRequestHandler("/user/login", HttpRequestMethod.POST, userHandler::login);
         requestHandlerMapping.registerRequestHandler("/user/logout", HttpRequestMethod.POST, userHandler::logout);
         requestHandlerMapping.registerRequestHandler("/user/me", HttpRequestMethod.GET, userHandler::me);
         requestHandlerMapping.registerRequestHandler("/", HttpRequestMethod.GET, viewHandler::indexPage);
+        requestHandlerMapping.registerRequestHandler("/mypage", HttpRequestMethod.GET, viewHandler::myPage);
+        requestHandlerMapping.registerRequestHandler("/image/upload", HttpRequestMethod.POST, imageUploadHandler::uploadFile);
+        requestHandlerMapping.registerRequestHandler("/post/write", HttpRequestMethod.GET, viewHandler::writePage);
 
-
+        // return entrypoint dependency
         return new RequestHandleThreadExecutor(
             CORE_POOL_SIZE,
             MAX_POOL_SIZE,
