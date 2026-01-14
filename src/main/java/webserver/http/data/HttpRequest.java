@@ -1,5 +1,6 @@
 package webserver.http.data;
 
+import webserver.http.enums.HttpContentType;
 import webserver.http.enums.HttpRequestMethod;
 
 import java.util.Map;
@@ -9,6 +10,7 @@ public record HttpRequest(
     HttpRequestMethod requestMethod,
     String requestURI,
     String httpVersion,
+    HttpContentType httpContentType,
     Map<String, String> headers,
     Map<String, Cookie> cookies,
     Map<String, String> queryParameters,
