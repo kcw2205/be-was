@@ -1,9 +1,10 @@
 package webserver.http.data;
 
-import webserver.http.converter.DataMapConverter;
+import webserver.http.converter.DataMapHttpBodyConverter;
 import webserver.http.converter.HttpBodyConverter;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.RecordComponent;
 import java.util.Map;
 
 public record HttpRequestBody(byte[] data) {
@@ -12,25 +13,26 @@ public record HttpRequestBody(byte[] data) {
         return converter.convertFromBody(this);
     }
 
-    public <T> T getDataAs(DataMapConverter converter, Class<T> clazz) {
+    public <T extends Record> T mapToRecord(DataMapHttpBodyConverter converter, Class<T> clazz) {
         try {
             Map<String, String> map = converter.convertFromBody(this);
 
-            T instance = clazz.getDeclaredConstructor().newInstance();
+            RecordComponent[] components = clazz.getRecordComponents();
+            Object[] args = new Object[components.length];
+            Class<?>[] paramTypes = new Class<?>[components.length];
 
-            for (Field field : clazz.getDeclaredFields()) {
-                field.setAccessible(true);
-                String fieldName = field.getName();
-                String value = map.get(fieldName);
+            for (int i = 0; i < components.length; ++i) {
+                String name = components[i].getName();
+                paramTypes[i] = components[i].getType();
 
-                if (value != null) {
-                    field.set(instance, value);
-                }
+                args[i] = map.get(name);
             }
 
-            return instance;
+            Constructor<T> constructor = clazz.getDeclaredConstructor(paramTypes);
+            return constructor.newInstance(args);
+
         } catch (Exception e) {
-            throw new RuntimeException("Failed to bind request body to Data class", e);
+            throw new RuntimeException("Failed to bind request body to data class", e);
         }
     }
 
