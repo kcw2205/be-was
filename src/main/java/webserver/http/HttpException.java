@@ -1,8 +1,9 @@
-package webserver.http.exceptions;
+package webserver.http;
 
 import webserver.http.enums.HttpStatusCode;
 
-class HttpException extends Exception {
+// TODO: Checked vs Unchecked, 어느쪽으로 하면 좋을지 고민하기
+public class HttpException extends RuntimeException {
     private final HttpStatusCode statusCode;
 
     public HttpException(HttpStatusCode statusCode, String message) {

@@ -1,7 +1,7 @@
 package webserver.http.enums;
 
 public enum HttpStatusCode {
-    METHOD_NOT_FOUND(405),
+    METHOD_NOT_ALLOWED(405),
     OK(200),
     UNAUTHORIZED(401),
     NOT_MODIFIED(304),

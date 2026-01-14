@@ -12,7 +12,9 @@ public enum HttpContentType {
     PNG("image/png"),
     ICO("image/x-icon"),
     JPG("image/jpeg"),
-    SVG("image/svg+xml");
+    SVG("image/svg+xml"),
+    NONE(null)
+    ;
 
     private final String name;
 

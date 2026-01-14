@@ -1,8 +1,9 @@
-package handler;
+package handler.api;
 
-import db.UserDatabase;
+import dao.UserDAO;
 import dto.LoginDto;
 import dto.UserDto;
+import message.UserHandlerExceptions;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,23 +20,30 @@ public class UserHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserHandler.class);
 
-    private final UserDatabase userDatabase;
+    // TODO: Validation 로직을 나눌지 고민해보기
+    private static final int LEAST_PARAMETER_LENGTH = 4;
+
+    private final UserDAO userDAO;
     private final SessionManager sessionManager;
 
-    public UserHandler(UserDatabase userDatabase, SessionManager sessionManager) {
-        this.userDatabase = userDatabase;
+    public UserHandler(UserDAO userDAO, SessionManager sessionManager) {
+        this.userDAO = userDAO;
         this.sessionManager = sessionManager;
     }
 
-    // TODO: DTO 검증로직 추가
-    public ResponseEntity<?> createUser(HttpRequest httpRequest) {
+    public ResponseEntity<UserDto> createUser(HttpRequest httpRequest) {
 
         UserDto userDto = httpRequest
             .body()
             .getDataAs(new UrlEncodedBodyConverter(), UserDto.class);
 
         if (!validateUserDto(userDto)) {
-            return ResponseEntity.simple(HttpStatusCode.BAD_REQUEST);
+            throw UserHandlerExceptions.BAD_REQUEST_FORMAT.toException();
+        }
+
+        // 중복 User 의 경우 회원가입 제한
+        if (userDAO.findById(userDto.getUserId()).isPresent()) {
+            throw UserHandlerExceptions.SAME_ID_EXISTS.toException();
         }
 
         User user = new User(
@@ -45,24 +53,25 @@ public class UserHandler {
             userDto.getEmail()
         );
 
-        userDatabase.addUser(user);
+        userDAO.addRecord(user.getUserId(), user);
 
         LOGGER.debug("{} added to database.", user);
 
         return ResponseEntity
-            .builder(UserDto.of(user), HttpStatusCode.REDIRECT, HttpContentType.APPLICATION_JSON)
+            .create(UserDto.of(user), HttpStatusCode.REDIRECT, HttpContentType.APPLICATION_JSON)
             .addHeader(HttpHeaderKey.LOCATION, "/");
     }
 
-    public ResponseEntity<?> login(HttpRequest httpRequest) {
+    public ResponseEntity<UserDto> login(HttpRequest httpRequest) {
         LoginDto loginDto = httpRequest
             .body()
             .getDataAs(new UrlEncodedBodyConverter(), LoginDto.class);
 
-        User user = userDatabase.findUserById(loginDto.getUserId());
+        User user = userDAO.findById(loginDto.getUserId())
+            .orElseThrow(UserHandlerExceptions.USER_NOT_FOUND::toException);
 
-        if (user == null || !user.getPassword().equals(loginDto.getPassword())) {
-            return ResponseEntity.builder("Invalid username or password", HttpStatusCode.FORBIDDEN, HttpContentType.TEXT_PLAIN);
+        if (!user.getPassword().equals(loginDto.getPassword())) {
+            throw UserHandlerExceptions.WRONG_PASSWORD.toException();
         }
 
         String sid = this.sessionManager.createSession(user);
@@ -72,15 +81,15 @@ public class UserHandler {
         cookie.setHttpOnly(true);
 
         return ResponseEntity
-            .simple(HttpStatusCode.OK)
+            .ok(UserDto.of(user), HttpContentType.APPLICATION_JSON)
             .addCookie(cookie);
     }
 
-    public ResponseEntity<?> logout(HttpRequest httpRequest) {
+    public ResponseEntity<Void> logout(HttpRequest httpRequest) {
         Cookie cookie = httpRequest.getCookieByName(SessionManager.SESSION_ID).orElse(null);
 
         if (cookie == null || cookie.getValue() == null) {
-            return ResponseEntity.simple(HttpStatusCode.FORBIDDEN);
+            throw UserHandlerExceptions.NOT_LOGGED_IN.toException();
         }
 
         sessionManager.clearSession(cookie.getValue());
@@ -90,11 +99,11 @@ public class UserHandler {
         resetCookie.setHttpOnly(true);
         resetCookie.setMaxAge(0);
 
-        return ResponseEntity.simple(HttpStatusCode.OK)
+        return ResponseEntity.ok()
             .addCookie(resetCookie);
     }
 
-    // TODO: null if 예외처리 대신, Checked Exception을 나중에 써보기
+    // TODO: 이곳에도 null if 예외처리 대신, Checked Exception을 나중에 써보기
     public ResponseEntity<?> me(HttpRequest httpRequest) {
         Cookie sessionCookie = httpRequest.getCookieByName(SessionManager.SESSION_ID).orElse(null);
 
@@ -115,10 +124,10 @@ public class UserHandler {
     }
 
     private boolean validateUserDto(UserDto userDto) {
-        boolean idValid = userDto.getUserId() != null && !userDto.getUserId().isEmpty();
-        boolean nameValid = userDto.getName() != null && !userDto.getName().isEmpty();
-        boolean emailValid = userDto.getEmail() != null && !userDto.getEmail().isEmpty();
-        boolean passwordValid = userDto.getPassword() != null && !userDto.getPassword().isEmpty();
+        boolean idValid = userDto.getUserId() != null && userDto.getUserId().length() >= LEAST_PARAMETER_LENGTH;
+        boolean nameValid = userDto.getName() != null && userDto.getName().length() >= LEAST_PARAMETER_LENGTH;
+        boolean emailValid = userDto.getEmail() != null && userDto.getEmail().length() >= LEAST_PARAMETER_LENGTH;
+        boolean passwordValid = userDto.getPassword() != null && userDto.getPassword().length() >= LEAST_PARAMETER_LENGTH;
 
         return idValid && nameValid && emailValid && passwordValid;
     }

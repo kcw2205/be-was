@@ -1,63 +1,70 @@
 package webserver.handling.statics;
 
 import webserver.handling.ResponseEntity;
+import webserver.http.HttpException;
 import webserver.http.data.HttpRequest;
 import webserver.http.enums.HttpContentType;
-import webserver.http.enums.HttpRequestMethod;
 import webserver.http.enums.HttpStatusCode;
 
 public class StaticHandler {
 
+    private static final String INDEX_HTML = "/index.html";
+    private static final String NOT_FOUND_PAGE = "/notfound.html";
     private final StaticFileResolver staticFileResolver;
 
     public StaticHandler(StaticFileResolver staticFileResolver) {
         this.staticFileResolver = staticFileResolver;
     }
 
-    public ResponseEntity<?> handleStaticRouteRequest(HttpRequest httpRequest) {
-        if (httpRequest.getHttpMethod() != HttpRequestMethod.GET) {
-            return ResponseEntity.simple(HttpStatusCode.NOT_FOUND);
-        }
-
+    public ResponseEntity<byte[]> handleStaticRouteRequest(HttpRequest httpRequest) {
         // 먼저, 정적 파일 요청인지 확인
-        ResponseEntity<?> staticFileResponse = handleStaticFileRequest(httpRequest);
+        ResponseEntity<byte[]> staticFileResponse = getStaticFileResponse(httpRequest);
 
-        if (staticFileResponse.getHttpStatusCode() != HttpStatusCode.NOT_FOUND) {
+        if (staticFileResponse != null) {
             return staticFileResponse;
         }
 
         // 그 이후에 정적 경로 라우팅이라면, 웹 디렉토리 인덱스 html 파일 반환
-        // 그럼에도 아니면 404 에러)를 리턴 하도록 수행
-        return handleRouteRequest(httpRequest.requestURI());
+        // 그럼에도 아니면 기본 404 에러를 리턴 하도록 수행
+        return handleWebDirectoryIndexRequest(httpRequest.requestURI());
     }
 
-    private ResponseEntity<?> handleStaticFileRequest(HttpRequest httpRequest) {
+    private ResponseEntity<byte[]> getStaticFileResponse(HttpRequest httpRequest) {
 
         for (StaticFileEnum e : StaticFileEnum.values()) {
             if (!httpRequest.requestURI().endsWith(e.getExt())) continue;
 
-            byte[] t = staticFileResolver.fetchStaticFile(httpRequest.requestURI()).orElse(null);
+            byte[] bytes = staticFileResolver.fetchStaticFile(httpRequest.requestURI()).orElse(null);
 
-            if (t != null) {
-                return ResponseEntity.ok(t, e.getContentType());
+            if (bytes != null) {
+                return ResponseEntity.ok(bytes, e.getContentType());
             }
         }
 
-        return ResponseEntity.simple(HttpStatusCode.NOT_FOUND);
+        return null;
     }
 
-    private ResponseEntity<?> handleRouteRequest(String uri) {
+    private ResponseEntity<byte[]> handleWebDirectoryIndexRequest(String uri) {
         if (uri.endsWith("/")) {
             uri = uri.substring(0, uri.length() - 1);
         }
-        uri += "/index.html";
+        uri += INDEX_HTML;
 
         byte[] payload = staticFileResolver.fetchStaticFile(uri).orElse(null);
 
         if (payload == null) {
-            return ResponseEntity.simple(HttpStatusCode.NOT_FOUND);
+            return handleNotFoundPage();
         }
 
         return ResponseEntity.ok(payload, HttpContentType.HTML);
+    }
+
+    private ResponseEntity<byte[]> handleNotFoundPage() {
+        byte[] b = staticFileResolver.fetchStaticFile(NOT_FOUND_PAGE).orElse(null);
+        if (b == null) {
+            throw new HttpException(HttpStatusCode.NOT_FOUND, "리소스를 찾을 수 없습니다.");
+        }
+
+        return ResponseEntity.create(b, HttpStatusCode.NOT_FOUND, HttpContentType.HTML);
     }
 }
