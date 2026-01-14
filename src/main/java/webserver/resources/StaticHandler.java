@@ -1,10 +1,12 @@
-package webserver.handling.statics;
+package webserver.resources;
 
 import webserver.handling.ResponseEntity;
 import webserver.http.HttpException;
 import webserver.http.data.HttpRequest;
 import webserver.http.enums.HttpContentType;
 import webserver.http.enums.HttpStatusCode;
+
+import java.nio.charset.StandardCharsets;
 
 public class StaticHandler {
 
@@ -64,6 +66,8 @@ public class StaticHandler {
 
         byte[] b = staticFileResolver.fetchStaticFile(NOT_FOUND_PAGE).orElseThrow(() -> e);
 
-        return ResponseEntity.create(b, HttpStatusCode.NOT_FOUND, HttpContentType.HTML);
+        String notFoundPage = new String(b, StandardCharsets.UTF_8);
+
+        return ResponseEntity.create(notFoundPage, HttpStatusCode.NOT_FOUND, HttpContentType.HTML);
     }
 }
