@@ -7,13 +7,24 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 public class UserDAOInMemory implements UserDAO {
     private final Map<String, User> users = new HashMap<>();
 
     @Override
-    public void addRecord(String key, User data) {
+    public User save(User data) {
+        String key = UUID.randomUUID().toString();
+
         users.put(key, data);
+
+        return new User(
+            key,
+            data.getPassword(),
+            data.getName(),
+            data.getEmail(),
+            data.getProfileImagePath()
+        );
     }
 
     @Override
