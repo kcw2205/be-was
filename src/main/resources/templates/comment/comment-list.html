@@ -1,0 +1,18 @@
+<ul class="comment">
+
+    {{ commentList }}
+
+    <button class="btn btn_ghost btn_size_m" id="show-all-btn">
+        모든 댓글 보기({{ commentCount }}개)
+    </button>
+</ul>
+
+<nav class="nav">
+    <ul class="nav__menu">
+        {{ prevArticleItem }}
+        <li class="nav__menu__item">
+            <a class="btn btn_ghost btn_size_m" href="/comment">댓글 작성</a>
+        </li>
+        {{ nextArticleItem }}
+    </ul>
+</nav>
