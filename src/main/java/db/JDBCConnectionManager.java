@@ -1,7 +1,4 @@
-package jdbc;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -18,12 +15,13 @@ import java.sql.SQLException;
  * List<Connection> connections;
  * }
  * </pre>
+ *
  * @see Connection
  */
 public class JDBCConnectionManager {
     // TODO: resource 에서 프로퍼티 파싱하게 만들기 (언젠가?)
-    private static final Logger LOGGER = LoggerFactory.getLogger(JDBCConnectionManager.class);
-    private static final String CONNECT_URL = "jdbc:h2:mem:db";
+    private static final String DRIVER_CLASS_NAME = "org.h2.Driver";
+    private static final String CONNECT_URL = "jdbc:h2:./h2database";
     private static final String USER = "sa";
     private static final String PASSWORD = "";
 
@@ -33,9 +31,8 @@ public class JDBCConnectionManager {
 
     public void start() {
         try {
-            Class.forName("org.h2.Driver");
-        }
-        catch (Exception e) {
+            Class.forName(DRIVER_CLASS_NAME);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
