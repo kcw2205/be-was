@@ -16,7 +16,7 @@ public class StaticHandler {
         this.staticFileResolver = staticFileResolver;
     }
 
-    public ResponseEntity<byte[]> handleStaticRouteRequest(HttpRequest httpRequest) {
+    public ResponseEntity<?> handleStaticRouteRequest(HttpRequest httpRequest) throws HttpException {
         // 먼저, 정적 파일 요청인지 확인
         ResponseEntity<byte[]> staticFileResponse = getStaticFileResponse(httpRequest);
 
@@ -44,7 +44,7 @@ public class StaticHandler {
         return null;
     }
 
-    private ResponseEntity<byte[]> handleWebDirectoryIndexRequest(String uri) {
+    private ResponseEntity<?> handleWebDirectoryIndexRequest(String uri) throws HttpException {
         if (uri.endsWith("/")) {
             uri = uri.substring(0, uri.length() - 1);
         }
@@ -59,11 +59,10 @@ public class StaticHandler {
         return ResponseEntity.ok(payload, HttpContentType.HTML);
     }
 
-    private ResponseEntity<byte[]> handleNotFoundPage() {
-        byte[] b = staticFileResolver.fetchStaticFile(NOT_FOUND_PAGE).orElse(null);
-        if (b == null) {
-            throw new HttpException(HttpStatusCode.NOT_FOUND, "리소스를 찾을 수 없습니다.");
-        }
+    public ResponseEntity<String> handleNotFoundPage() throws HttpException {
+        HttpException e = new HttpException(HttpStatusCode.INTERNAL_SERVER_ERROR, HttpStatusCode.INTERNAL_SERVER_ERROR.getStatusName());
+
+        byte[] b = staticFileResolver.fetchStaticFile(NOT_FOUND_PAGE).orElseThrow(() -> e);
 
         return ResponseEntity.create(b, HttpStatusCode.NOT_FOUND, HttpContentType.HTML);
     }

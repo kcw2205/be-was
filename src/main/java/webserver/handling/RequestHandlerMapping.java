@@ -1,10 +1,10 @@
 package webserver.handling;
 
-import webserver.handling.statics.StaticHandler;
 import webserver.http.HttpException;
 import webserver.http.data.HttpRequest;
 import webserver.http.enums.HttpRequestMethod;
 import webserver.http.enums.HttpStatusCode;
+import webserver.resources.StaticHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class RequestHandlerMapping {
         handlerMap.put(httpRequestMethod, handler);
     }
 
-    public RequestHandler getRequestHandler(HttpRequest httpRequest) {
+    public RequestHandler getRequestHandler(HttpRequest httpRequest) throws HttpException {
         HttpRequestMethod method = httpRequest.requestMethod();
         String uri = httpRequest.requestURI();
 
