@@ -11,17 +11,24 @@ import java.util.Map;
 public class HtmlComponent implements Renderable {
     private static final String START_DELIMITER = "{{";
     private static final String END_DELIMITER = "}}";
+    private static final String RENDER_INDEX_KEY = "index";
     private final Logger LOGGER = LoggerFactory.getLogger(HtmlComponent.class);
     private final String template;
-    private Map<String, Renderable> fieldMap;
+    private final Map<String, Renderable> fieldMap;
 
-    public HtmlComponent(String templateFilePath, Map<String, Renderable> fieldMap) {
+    public HtmlComponent(String templateFilePath) {
         this.template = TemplateLoadUtil.load(templateFilePath);
-        this.fieldMap = fieldMap == null ? new HashMap<>() : fieldMap;
+        this.fieldMap = new HashMap<>();
     }
 
-    public void refreshFieldMap(Map<String, Renderable> fieldMap) {
-        this.fieldMap = new HashMap<>();
+    public void setField(String fieldName, Renderable field) {
+        this.fieldMap.put(fieldName, field);
+    }
+
+    // Package-Private 로 만들어서 외부에서는 Private 로 사용
+    String renderByIndex(int index) {
+        this.fieldMap.put(RENDER_INDEX_KEY, new RawString(String.valueOf(index)));
+        return render();
     }
 
     @Override
@@ -53,17 +60,8 @@ public class HtmlComponent implements Renderable {
             Renderable value = fieldMap.get(key);
 
             if (value != null) {
-                if (value instanceof HtmlComponent) {
-                    // 값이 또 다른 Component라면 재귀 호출
-                    sb.append(value.render());
-                } else {
-                    // 일반 String이나 숫자라면 그대로 문자열 변환
-                    // String 이 아닌 경우, 의도하지 않은 경우이므로 그냥 toString 사용했음.
-                    sb.append(value);
-                }
+                sb.append(value.render());
             } else {
-                // 데이터가 없으면 빈 문자열 혹은 디버그용 텍스트 처리
-                // sb.append("");
                 LOGGER.warn("Warn: No value found for key: {}", key);
             }
 
