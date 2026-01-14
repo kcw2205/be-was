@@ -11,6 +11,7 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+// TODO: 요청 핸들링 과정에서 생기는 책임 결합을 SRP에 따라 분리하기
 public class RequestHandleThreadExecutor extends ThreadPoolExecutor {
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestHandleThreadExecutor.class);
     private final HttpRequestParser httpRequestParser;
