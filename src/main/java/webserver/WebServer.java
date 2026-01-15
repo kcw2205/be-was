@@ -116,6 +116,8 @@ public class WebServer {
         requestHandlerMapping.registerRequestHandler("/mypage", HttpRequestMethod.GET, viewHandler::myPage);
         requestHandlerMapping.registerRequestHandler("/image/upload", HttpRequestMethod.POST, imageUploadHandler::uploadFile);
         requestHandlerMapping.registerRequestHandler("/post/write", HttpRequestMethod.GET, viewHandler::writePage);
+        requestHandlerMapping.registerRequestHandler("/login", HttpRequestMethod.GET, viewHandler::loginPage);
+        requestHandlerMapping.registerRequestHandler("/register", HttpRequestMethod.GET, viewHandler::registerPage);
 
         // return entrypoint dependency
         return new RequestHandleThreadExecutor(
