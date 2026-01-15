@@ -202,4 +202,4 @@ gradle-app.setting
 storage
 
 # H2 데이터베이스 파일
-h2database.mv.db
+h2database.*
