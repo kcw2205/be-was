@@ -2,6 +2,7 @@ package service;
 
 import dto.command.UserLoginCommand;
 import dto.command.UserRegisterCommand;
+import dto.command.UserUpdateCommand;
 import model.User;
 import webserver.http.HttpException;
 import webserver.http.data.HttpRequest;
@@ -9,8 +10,10 @@ import webserver.http.data.HttpRequest;
 public interface UserService {
     String SESSION_ID = "sid";
 
-    // TODO: 이렇게 HTTP 단과 결합해도 괜찮은지 의논 필요
+    // TODO: 이렇게 HTTP 단과 결합해도 괜찮은지 의논 필요 -> 필터 구현해보기
     User getCurrentUser(HttpRequest request) throws HttpException;
+
+    void syncSession(HttpRequest request) throws HttpException;
 
     User createUser(UserRegisterCommand userRegisterCommand) throws HttpException;
 
@@ -23,4 +26,8 @@ public interface UserService {
     String login(UserLoginCommand userLoginCommand) throws HttpException;
 
     void logout(HttpRequest request) throws HttpException;
+
+    User updateUser(User user, UserUpdateCommand command) throws HttpException;
+
+
 }
