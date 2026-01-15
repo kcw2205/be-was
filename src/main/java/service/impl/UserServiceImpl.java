@@ -3,6 +3,7 @@ package service.impl;
 import dao.UserDAO;
 import dto.command.UserLoginCommand;
 import dto.command.UserRegisterCommand;
+import dto.command.UserUpdateCommand;
 import exception.ServiceErrorCode;
 import model.User;
 import service.SecurityService;
@@ -10,6 +11,7 @@ import service.UserService;
 import webserver.http.HttpException;
 import webserver.http.data.Cookie;
 import webserver.http.data.HttpRequest;
+import webserver.http.enums.HttpStatusCode;
 import webserver.session.SessionManager;
 
 /**
@@ -91,4 +93,19 @@ public class UserServiceImpl implements UserService {
 
         sessionManager.clearSession(cookie.getValue());
     }
+
+    // TODO: DAO 에서 수정 반려 시 세션과 동기화되지 않는 버그 있음. 세션은 업데이트되지만 DAO 에서 수정은 안됨.
+    @Override
+    public User updateUser(User user, UserUpdateCommand command) throws HttpException {
+        user.updateUserInfo(
+            command.name() == null ? user.getName() : securityService.escapeXss(command.name()),
+            command.password() == null ? user.getPassword() : command.password(),
+            command.imagePath() == null ? (command.isImageDeleted() ? "" : user.getProfileImagePath()) : securityService.escapeXss(command.imagePath())
+        );
+
+        userDAO.save(user);
+
+        return user;
+    }
+
 }

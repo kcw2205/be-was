@@ -3,6 +3,7 @@ package handler;
 import dto.UserDto;
 import dto.command.UserLoginCommand;
 import dto.command.UserRegisterCommand;
+import dto.command.UserUpdateCommand;
 import exception.ServiceErrorCode;
 import model.User;
 import org.slf4j.Logger;
@@ -83,5 +84,24 @@ public class UserHandler {
         }
 
         return ResponseEntity.ok(UserDto.of(user), HttpContentType.APPLICATION_JSON);
+    }
+
+    public ResponseEntity<UserDto> updateUser(HttpRequest httpRequest) throws HttpException {
+        UserUpdateCommand command = httpRequest
+            .body()
+            .mapToRecord(new UrlEncodedBodyConverter(), UserUpdateCommand.class);
+
+        try {
+            User user = userService.getCurrentUser(httpRequest);
+            User updatedUser = userService.updateUser(user, command);
+
+            userService.syncSession(httpRequest);
+
+            return ResponseEntity.ok(UserDto.of(updatedUser), HttpContentType.APPLICATION_JSON);
+        } catch (RuntimeException e) {
+            // 업데이트 실패 시, 데이터베이스에 있던 내용과 세션을 다시 동기화 해줘야함. (update 로직 때문)
+            // TODO: 불변성을 지키고자해도 동기화를 해주어야하므로 현재로썬 이 방법이 가장 간단 (유지보수에는 비적합)
+            throw e;
+        }
     }
 }

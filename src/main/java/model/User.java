@@ -1,7 +1,11 @@
 package model;
 
+import exception.ServiceErrorCode;
+import webserver.http.HttpException;
+
 public class User {
     private static final String DEFAULT_PROFILE_IMAGE = "profile.png";
+    private static final int LEAST_PARAMETER_LENGTH = 4;
     private String userId;
     private String password;
     private String name;
@@ -16,12 +20,25 @@ public class User {
         this.profileImagePath = profileImagePath;
     }
 
-    public User(String userId, String password, String name, String email) {
+    public User(String userId, String password, String name, String email) throws HttpException {
         this.userId = userId;
         this.password = password;
         this.name = name;
         this.email = email;
         this.profileImagePath = DEFAULT_PROFILE_IMAGE;
+
+        if (!validateUserRegisterCommand()) {
+            throw ServiceErrorCode.BAD_REQUEST_FORMAT.toException();
+        }
+    }
+
+    private boolean validateUserRegisterCommand() {
+        boolean idValid = this.userId != null && this.userId.length() >= LEAST_PARAMETER_LENGTH;
+        boolean nameValid = this.name != null && this.name.length() >= LEAST_PARAMETER_LENGTH;
+        boolean emailValid = this.email != null && this.email.length() >= LEAST_PARAMETER_LENGTH;
+        boolean passwordValid = this.password != null && this.password.length() >= LEAST_PARAMETER_LENGTH;
+
+        return idValid && nameValid && emailValid && passwordValid;
     }
 
     @Override
@@ -29,17 +46,19 @@ public class User {
         return "User [userId=" + userId + ", password=" + password + ", name=" + name + ", email=" + email + "]";
     }
 
-    public void resetProfileImage() {
-        this.profileImagePath = DEFAULT_PROFILE_IMAGE;
-    }
-
-    public void updateProfileImage(String profileImagePath) {
-        this.profileImagePath = DEFAULT_PROFILE_IMAGE;
-    }
-
-    public void updateUserInfo(String name, String password) {
+    public void updateUserInfo(String name, String password, String profileImagePath) throws HttpException {
         this.name = name;
         this.password = password;
+        if (profileImagePath.isBlank()) {
+            this.profileImagePath = DEFAULT_PROFILE_IMAGE;
+        }
+        else {
+            this.profileImagePath = profileImagePath;
+        }
+
+        if (!validateUserRegisterCommand()) {
+            throw ServiceErrorCode.BAD_REQUEST_FORMAT.toException();
+        }
     }
 
     public String getUserId() {

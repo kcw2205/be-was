@@ -33,24 +33,43 @@ public class UserDAOH2 extends H2DAO<User, String> implements UserDAO {
 
     @Override
     public User save(User user) {
-        String sql = "INSERT INTO USERS (userId, password, name, email, profileImagePath) VALUES (?, ?, ?, ?, ?)";
+        if (findById(user.getUserId()).isPresent()) {
+            return update(user);
+        }
 
+        // 2. 없으면 기존처럼 INSERT
+        String sql = "INSERT INTO USERS (userId, password, name, email, profileImagePath) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
             pstmt.setString(1, user.getUserId());
             pstmt.setString(2, user.getPassword());
             pstmt.setString(3, user.getName());
             pstmt.setString(4, user.getEmail());
             pstmt.setString(5, user.getProfileImagePath());
-
             pstmt.executeUpdate();
-
-            // User는 보통 입력받은 userId가 PK이므로 저장된 유저 객체를 그대로 반환하거나
-            // DB에서 다시 조회해서 반환하는 방식을 사용합니다.
             return user;
         } catch (SQLException e) {
             throw new RuntimeException("사용자 추가 중 오류 발생", e);
+        }
+    }
+
+    // 정보 수정을 전용으로 담당하는 private 메서드
+    private User update(User user) {
+        String sql = "UPDATE USERS SET password = ?, name = ?, profileImagePath = ?, email = ? WHERE userId = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, user.getPassword());
+            pstmt.setString(2, user.getName());
+            pstmt.setString(3, user.getProfileImagePath());
+            pstmt.setString(4, user.getEmail());
+            pstmt.setString(5, user.getUserId());
+
+            pstmt.executeUpdate();
+            return user;
+        } catch (SQLException e) {
+            throw new RuntimeException("사용자 정보 수정 중 오류 발생", e);
         }
     }
 
@@ -112,14 +131,16 @@ public class UserDAOH2 extends H2DAO<User, String> implements UserDAO {
 
     // ResultSet을 User 객체로 변환하는 헬퍼 메서드
     private User mapRowToUser(ResultSet rs) throws SQLException {
-        User user = new User(
-            rs.getString("userId"),
-            rs.getString("password"),
-            rs.getString("name"),
-            rs.getString("email")
-        );
-        // 기본 이미지 외의 값이 저장되어 있을 수 있으므로 업데이트
-        user.updateProfileImage(rs.getString("profileImagePath"));
-        return user;
+        try {
+            return new User(
+                rs.getString("userId"),
+                rs.getString("password"),
+                rs.getString("name"),
+                rs.getString("email"),
+                rs.getString("profileImagePath")
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
