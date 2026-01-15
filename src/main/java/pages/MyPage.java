@@ -4,20 +4,15 @@ import model.User;
 import webserver.template.HtmlComponent;
 import webserver.template.RawString;
 
-public class MyPage implements Page {
-    HtmlComponent rootComponent;
+public class MyPage extends GlobalPage {
 
     public MyPage(User user) {
-        this.rootComponent = new HtmlComponent("mypage");
-        HtmlComponent gnb = new HtmlComponent("gnb/user-menu");
-        gnb.setField("name", new RawString(user.getName()));
-        this.rootComponent.setField("menuComponent", gnb);
-        this.rootComponent.setField("profileImagePath", new RawString(user.getProfileImagePath()));
-        this.rootComponent.setField("name", new RawString(user.getName()));
-    }
+        super(user);
+        HtmlComponent page = new HtmlComponent("my/my-page");
 
-    @Override
-    public String renderPage() {
-        return this.rootComponent.render();
+        page.setField("profileImagePath", new RawString(user.getProfileImagePath()));
+        page.setField("name", new RawString(user.getName()));
+
+        this.setPage(page);
     }
 }

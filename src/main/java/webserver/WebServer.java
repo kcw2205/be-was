@@ -8,6 +8,8 @@ import dao.impl.h2.CommentDAOH2;
 import dao.impl.h2.UserDAOH2;
 import db.H2DatabaseConfig;
 import db.JDBCConnectionManager;
+import handler.ArticleHandler;
+import handler.CommentHandler;
 import handler.ImageUploadHandler;
 import handler.UserHandler;
 import handler.ViewHandler;
@@ -16,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import service.ArticleService;
 import service.CommentService;
 import service.ImageUploadService;
+import service.SecurityService;
 import service.UserService;
 import service.impl.ArticleServiceImpl;
 import service.impl.CommentServiceImpl;
@@ -94,15 +97,18 @@ public class WebServer {
 
 
         // user-defined service layers
-        UserService userService = new UserServiceImpl(userDAO, sessionManager);
-        ArticleService articleService = new ArticleServiceImpl(articleDAO);
-        CommentService commentService = new CommentServiceImpl(commentDAO, userDAO);
+        SecurityService securityService = new SecurityService();
+        UserService userService = new UserServiceImpl(userDAO, sessionManager, securityService);
+        ArticleService articleService = new ArticleServiceImpl(articleDAO, userDAO, securityService);
+        CommentService commentService = new CommentServiceImpl(commentDAO, userDAO, securityService);
         ImageUploadService imageUploadService = new ImageUploadServiceImpl(imageUploadWorker);
 
         // user-defined handlers
 
         UserHandler userHandler = new UserHandler(userService);
         ViewHandler viewHandler = new ViewHandler(staticHandler, userService, articleService, commentService);
+        ArticleHandler articleHandler = new ArticleHandler(userService, articleService);
+        CommentHandler commentHandler = new CommentHandler(userService, articleService, commentService);
         ImageUploadHandler imageUploadHandler = new ImageUploadHandler(imageUploadService);
 
         // do handler-mapping
@@ -110,10 +116,17 @@ public class WebServer {
         requestHandlerMapping.registerRequestHandler("/user/login", HttpRequestMethod.POST, userHandler::login);
         requestHandlerMapping.registerRequestHandler("/user/logout", HttpRequestMethod.POST, userHandler::logout);
         requestHandlerMapping.registerRequestHandler("/user/me", HttpRequestMethod.GET, userHandler::me);
+        requestHandlerMapping.registerRequestHandler("/user", HttpRequestMethod.PATCH, userHandler::updateUser);
         requestHandlerMapping.registerRequestHandler("/", HttpRequestMethod.GET, viewHandler::indexPage);
         requestHandlerMapping.registerRequestHandler("/mypage", HttpRequestMethod.GET, viewHandler::myPage);
         requestHandlerMapping.registerRequestHandler("/image/upload", HttpRequestMethod.POST, imageUploadHandler::uploadFile);
-        requestHandlerMapping.registerRequestHandler("/post/write", HttpRequestMethod.GET, viewHandler::writePage);
+        requestHandlerMapping.registerRequestHandler("/article/write", HttpRequestMethod.GET, viewHandler::writeArticlePage);
+        requestHandlerMapping.registerRequestHandler("/article", HttpRequestMethod.POST, articleHandler::createArticle);
+        requestHandlerMapping.registerRequestHandler("/comment", HttpRequestMethod.GET, viewHandler::writeCommentPage);
+        requestHandlerMapping.registerRequestHandler("/comment", HttpRequestMethod.POST, commentHandler::createComment);
+        requestHandlerMapping.registerRequestHandler("/article/like", HttpRequestMethod.POST, articleHandler::likeArticle);
+        requestHandlerMapping.registerRequestHandler("/login", HttpRequestMethod.GET, viewHandler::loginPage);
+        requestHandlerMapping.registerRequestHandler("/register", HttpRequestMethod.GET, viewHandler::registerPage);
 
         // return entrypoint dependency
         return new RequestHandleThreadExecutor(

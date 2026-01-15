@@ -49,18 +49,25 @@ public class SessionManager {
         return sid;
     }
 
+    public void updateSession(String sid, Object item) {
+        Session session = this.sessions.get(sid);
+
+        if (session == null) return;
+
+        session.updatePayload(item);
+    }
+
     // TODO: Object 반환...!!! 어떻게할지..? -> Servlet 에서는 어쩔 수 없이 캐스팅했던 것 같은데 더 좋은 방법?
     public Optional<Object> findById(String sid) {
         Session sobj = sessions.get(sid);
 
         if (sobj == null || sobj.isExpired()) return Optional.empty();
 
-        return Optional.ofNullable(sobj.payload());
+        return Optional.ofNullable(sobj.getPayload());
     }
 
-    // TODO: UUID 대신에 좋은 다양한 방법 생각해보기
-    // 현재로써는 간단하게 UUID 를 받아왔음. 현재로썬 충돌이 가장 덜나며, 간단하기 때문.
     private String createSessionId() {
+
         return UUID.randomUUID().toString();
     }
 

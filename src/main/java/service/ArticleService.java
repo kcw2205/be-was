@@ -1,6 +1,7 @@
 package service;
 
 import dto.command.CreateArticleCommand;
+import dto.output.ArticleDetail;
 import model.Article;
 import model.User;
 import webserver.http.HttpException;
@@ -11,13 +12,11 @@ public interface ArticleService {
 
     Article createArticle(User user, CreateArticleCommand command);
 
+    Optional<Article> getArticleById(long id);
+
     void likeArticle(long articleId) throws HttpException;
 
-    Optional<Article> findFirstOrderByIdDesc();
+    Optional<ArticleDetail> getDefaultArticle() throws HttpException;
 
-    Optional<Article> findById(long id);
-
-    Optional<Article> findPreviousArticle(long id);
-
-    Optional<Article> findNextArticle(long id);
+    Optional<ArticleDetail> getArticleDetailById(long id) throws HttpException;
 }

@@ -1,0 +1,131 @@
+<div class="page">
+    <h2 class="page-title">마이페이지</h2>
+
+    <div class="profile_container">
+        <div class="profile_box">
+            <div class="profile_image">
+                <img class="profile" id="profile-img-preview" src="{{ profileImagePath }}"/>
+            </div>
+            <div class="profile_frame">
+                <input accept=".png, .jpg, .jpeg" id="profile-upload-input" style="display: none;" type="file"/>
+
+                <div class="btn_profile" id="profile-edit-btn" style="cursor: pointer;">
+                    <div class="btn_container">수정</div>
+                </div>
+                <div class="btn_bar"></div>
+                <div class="btn_profile" id="profile-delete-btn" style="cursor: pointer;">
+                    <div class="btn_container">삭제</div>
+                </div>
+            </div>
+        </div>
+
+        <form class="form">
+            <div class="textfield textfield_size_s input_margin">
+                <p class="title_textfield">닉네임</p>
+                <input class="input_textfield" id="nickname-input" value="{{ name }}" />
+            </div>
+            <div class="textfield textfield_size_s">
+                <p class="title_textfield">비밀번호</p>
+                <input class="input_textfield" id="password-input" placeholder="변경 시에만 입력" type="password" />
+            </div>
+            <div class="textfield textfield_size_s">
+                <p class="title_textfield">비밀번호 확인</p>
+                <input class="input_textfield" id="password-confirm-input" placeholder="한 번 더 입력" type="password" />
+            </div>
+            <button class="btn btn_contained btn_size_m input_margin" id="registration-btn" type="button">
+                변경사항 저장
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const profileEditBtn = document.querySelector('#profile-edit-btn');
+    const profileDeleteBtn = document.querySelector('#profile-delete-btn');
+    const profileUploadInput = document.querySelector('#profile-upload-input');
+    const profilePreview = document.querySelector('#profile-img-preview');
+
+    const nicknameInput = document.querySelector('#nickname-input');
+    const passwordInput = document.querySelector('#password-input');
+    const passwordConfirmInput = document.querySelector('#password-confirm-input');
+    const saveBtn = document.querySelector('#registration-btn');
+
+    // 상태 관리 변수
+    let currentImagePath = null; // 새 이미지 경로 (변경 시에만 할당)
+    let isImageDeleted = false;  // 삭제 버튼 클릭 여부
+    const DEFAULT_IMAGE_PATH = "/profile.png";
+
+    // 1. 이미지 수정 (업로드)
+    profileEditBtn.addEventListener('click', () => profileUploadInput.click());
+
+    profileUploadInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            const response = await fetch('/image/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': file.type },
+                body: file
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                currentImagePath = data.path;
+                isImageDeleted = false; // 새 이미지를 올렸으므로 삭제 플래그 해제
+                profilePreview.src = currentImagePath;
+            }
+        } catch (error) {
+            alert('이미지 업로드 중 오류가 발생했습니다.');
+        }
+    });
+
+    // 2. 이미지 삭제 (플래그 활성화)
+    profileDeleteBtn.addEventListener('click', () => {
+        if (confirm('프로필 이미지를 기본 이미지로 초기화하시겠습니까?')) {
+            isImageDeleted = true;
+            currentImagePath = null; // 업로드 대기 중인 경로가 있다면 초기화
+            profilePreview.src = DEFAULT_IMAGE_PATH;
+        }
+    });
+
+    // 3. 최종 저장 (PATCH)
+    saveBtn.addEventListener('click', async () => {
+        // 비밀번호 검증
+        if (passwordInput.value !== passwordConfirmInput.value) {
+            alert('비밀번호가 일치하지 않습니다.');
+            return;
+        }
+
+        const params = new URLSearchParams();
+
+        // 서버 요구사항에 따른 데이터 구성
+        params.append('isImageDeleted', isImageDeleted); // boolean 전송
+        params.append('name', nicknameInput.value);
+
+        if (currentImagePath) {
+            params.append('imagePath', currentImagePath);
+        }
+        if (passwordInput.value) {
+            params.append('password', passwordInput.value);
+        }
+
+        try {
+            const response = await fetch('/user', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params
+            });
+
+            if (response.ok) {
+                alert('변경사항이 성공적으로 저장되었습니다.');
+                window.location.reload();
+            } else {
+                const msg = await response.text();
+                alert('저장 실패: ' + msg);
+            }
+        } catch (error) {
+            alert('통신 오류가 발생했습니다.');
+        }
+    });
+</script>

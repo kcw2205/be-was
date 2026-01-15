@@ -1,40 +1,105 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link href="/reset.css" rel="stylesheet"/>
-    <link href="/global.css" rel="stylesheet"/>
-</head>
-<body>
-<div class="container">
-    <header class="header">
-        <a href="/main"><img src="/img/signiture.svg"/></a>
-        <ul class="header__menu">
-            {{ menuComponent }}
-        </ul>
-    </header>
-    <div class="page">
-        <h2 class="page-title">게시글 작성</h2>
-        <form class="form">
-            <div class="textfield textfield_size_m">
-                <p class="title_textfield">내용</p>
-                <textarea
-                        class="input_textfield"
-                        placeholder="글의 내용을 입력하세요"
-                        autocomplete="username"
-                ></textarea>
-            </div>
-            <button
-                    id="registration-btn"
-                    class="btn btn_contained btn_size_m"
-                    style="margin-top: 24px"
-                    type="button"
-            >
-                작성 완료
+<div class="page">
+    <h2 class="page-title">게시글 작성</h2>
+    <form class="form">
+        <div class="textfield textfield_size_m">
+            <p class="title_textfield">내용</p>
+            <textarea
+                    class="input_textfield"
+                    id="content"
+                    placeholder="글의 내용을 입력하세요"
+            ></textarea>
+        </div>
+
+        <div class="image_upload_container" style="display: flex; align-items: center; justify-content: space-between; margin-top: 24px; padding: 0 4px;">
+            <p id="upload-status" style="font-size: 16px; color: #888; margin: 0;">첨부파일 없음</p>
+
+            <input accept=".png, .jpg, .jpeg" id="image-input" style="display: none;" type="file">
+
+            <button class="btn btn_contained" id="custom-upload-btn" style="background-color: #5363d3; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;" type="button">
+                파일 첨부
             </button>
-        </form>
-    </div>
+        </div>
+
+        <button
+                class="btn btn_contained btn_size_m"
+                id="registration-btn"
+                style="margin-top: 40px; width: 100%; height: 56px; font-size: 18px; font-weight: bold; background-color: #5363d3;"
+                type="button"
+        >
+            작성 완료
+        </button>
+    </form>
 </div>
-</body>
-</html>
+<script>
+    const contentTarget = document.querySelector('#content');
+    const imageInput = document.querySelector('#image-input');
+    const customUploadBtn = document.querySelector('#custom-upload-btn'); // 커스텀 버튼
+    const submitBtn = document.querySelector('#registration-btn');
+    const statusText = document.querySelector('#upload-status');
+
+    let uploadedImagePath = '';
+
+    // [추가] 커스텀 버튼 클릭 시 숨겨진 파일 인풋 클릭 트리거
+    customUploadBtn.addEventListener('click', () => {
+        imageInput.click();
+    });
+
+    // 1. 이미지 선택 시 즉시 업로드 (로직은 동일)
+    imageInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('jpg 또는 png 파일만 올려주세요.');
+            return;
+        }
+
+        try {
+            statusText.innerText = '업로드 중...';
+            submitBtn.disabled = true;
+
+            const response = await fetch('/image/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': file.type },
+                body: file
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                uploadedImagePath = data.path;
+                // 사진처럼 파일명으로 텍스트 업데이트
+                statusText.innerText = file.name;
+                statusText.style.color = '#333';
+            } else {
+                throw new Error();
+            }
+        } catch (error) {
+            alert('이미지 업로드 오류');
+            statusText.innerText = '첨부파일 없음';
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+
+    // 2. 게시글 등록 (로직 동일)
+    submitBtn.addEventListener('click', async () => {
+        const content = contentTarget.value.trim();
+        if (!content) return alert('내용을 입력하세요.');
+
+        const params = new URLSearchParams();
+        params.append('content', content);
+        params.append('imagePath', uploadedImagePath);
+
+        const response = await fetch('/article', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params
+        });
+
+        if (response.ok) {
+            alert('등록 완료!');
+            window.location.href = '/';
+        }
+    });
+</script>

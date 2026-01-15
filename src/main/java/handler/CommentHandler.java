@@ -28,7 +28,6 @@ public class CommentHandler {
         this.commentService = commentService;
     }
 
-    // TODO: 시간 없어서 Path Variable 은 구현하지 않음..
     public ResponseEntity<List<CommentDetailOutput>> findByArticleId(HttpRequest httpRequest) throws HttpException {
         CommentByArticleQuery query = httpRequest.body().mapToRecord(new UrlEncodedBodyConverter(), CommentByArticleQuery.class);
 
@@ -42,7 +41,7 @@ public class CommentHandler {
             .mapToRecord(new UrlEncodedBodyConverter(), CreateCommentCommand.class);
 
         User user = userService.getCurrentUser(httpRequest);
-        Article article = articleService.findById(command.articleId())
+        Article article = articleService.getArticleById(command.articleId())
             .orElseThrow(ServiceErrorCode.RESOURCE_NOT_FOUND::toException);
 
         CommentDetailOutput comment = commentService.addCommentToArticle(user, article, command);
