@@ -90,9 +90,15 @@ public class HttpRequestParser {
 
         for (String queryParam : queryParamString) {
             if (queryParam.contains("=")) {
-                String[] keyValue = queryParam.split("=");
+                String[] keyValue = queryParam.split("=", 2);
                 String key = keyValue[0];
-                String value = keyValue[1];
+
+                String value = "";
+
+                if (keyValue.length > 1) {
+                    value = keyValue[1];
+                }
+
                 queryParameters.put(key, value);
             }
         }

@@ -10,6 +10,10 @@ import java.util.Map;
 
 public record HttpRequestBody(byte[] data) {
 
+    public static HttpRequestBody empty() {
+        return new HttpRequestBody(new byte[0]);
+    }
+
     public <T> T getData(HttpBodyConverter<T> converter) {
         return converter.convertFromBody(this);
     }
