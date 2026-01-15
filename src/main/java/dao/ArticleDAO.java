@@ -1,5 +1,6 @@
 package dao;
 
+import dto.output.ArticleDetail;
 import model.Article;
 
 import java.util.Optional;
@@ -11,4 +12,10 @@ public interface ArticleDAO extends DataAccessObject<Article, Long> {
     Optional<Article> findNextById(long id);
 
     Optional<Article> findFirstOrderByIdDesc();
+
+    Optional<ArticleDetail> findRecentArticleDetail();
+
+    Optional<ArticleDetail> findArticleDetailById(long id);
+
+    void increaseLikeCount(Long id);
 }
