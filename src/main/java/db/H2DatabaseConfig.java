@@ -9,7 +9,7 @@ import java.sql.SQLException;
 public class H2DatabaseConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(H2DatabaseConfig.class);
     private static final String H2_CONSOLE_PORT = "8082";
-    private static final H2TableCreatePolicy H_2_TABLE_CREATE_POLICY = H2TableCreatePolicy.ALWAYS;
+    private static final H2TableCreatePolicy H_2_TABLE_CREATE_POLICY = H2TableCreatePolicy.NOT_EXISTS;
 
     public H2DatabaseConfig() {
         this.startH2Console();
