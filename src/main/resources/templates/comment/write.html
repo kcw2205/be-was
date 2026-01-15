@@ -1,0 +1,83 @@
+<div class="page">
+    <h2 class="page-title">댓글 작성</h2>
+    <form class="form">
+        <div class="textfield textfield_size_m">
+            <p class="title_textfield">내용</p>
+            <textarea
+                    autocomplete="off"
+                    class="input_textfield"
+                    id="comment-content"
+                    placeholder="글의 내용을 입력하세요"
+            ></textarea>
+        </div>
+        <button
+                class="btn btn_contained btn_size_m"
+                id="registration-btn"
+                style="margin-top: 24px"
+                type="button"
+        >
+            작성 완료
+        </button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const contentTarget = document.querySelector('#comment-content');
+        const submitBtn = document.querySelector('#registration-btn');
+
+        // 1. URL 쿼리 파라미터에서 articleId 추출 및 숫자 변환
+        const urlParams = new URLSearchParams(window.location.search);
+        const rawArticleId = urlParams.get('articleId');
+        const articleId = parseInt(rawArticleId, 10);
+
+        // articleId가 없거나 숫자가 아닌 경우에 대한 간단한 처리
+        if (!rawArticleId || isNaN(articleId)) {
+            alert('잘못된 접근입니다. 게시글 번호가 필요합니다.');
+            submitBtn.disabled = true;
+            return;
+        }
+
+        // 2. 작성 완료 버튼 클릭 이벤트
+        submitBtn.addEventListener('click', async () => {
+            const content = contentTarget.value.trim();
+
+            if (!content) {
+                alert('댓글 내용을 입력해 주세요.');
+                return;
+            }
+
+            // 전송 데이터 준비 (UrlEncoded)
+            const params = new URLSearchParams();
+            params.append('articleId', articleId);
+            params.append('content', content);
+
+            try {
+                submitBtn.disabled = true; // 중복 클릭 방지
+
+                const response = await fetch('/comment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: params
+                });
+
+                if (response.ok) {
+                    // 성공 시 해당 게시글 페이지로 이동
+                    alert('댓글이 등록되었습니다.');
+                    window.location.href = `/?articleId=${articleId}`;
+                } else {
+                    // 에러 시 text/plain 메세지 읽어서 alert 출력
+                    const errorMessage = await response.text();
+                    alert(errorMessage || '댓글 등록 중 오류가 발생했습니다.');
+                    submitBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Network Error:', error);
+                alert('네트워크 연결 확인 후 다시 시도해주세요.');
+                submitBtn.disabled = false;
+            }
+        });
+    });
+</script>
