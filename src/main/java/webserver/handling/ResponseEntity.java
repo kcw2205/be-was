@@ -1,6 +1,7 @@
 package webserver.handling;
 
 
+import webserver.http.HttpResponseMapper;
 import webserver.http.data.Cookie;
 import webserver.http.data.HttpResponse;
 import webserver.http.enums.HttpContentType;
@@ -23,16 +24,7 @@ public class ResponseEntity<T> {
         this.httpStatusCode = status;
         if (contentType != null) this.headers.put(HttpHeaderKey.CONTENT_TYPE.toString(), contentType.toString());
 
-        // TODO: ObjectMapper 사용하기..!
-        if (data instanceof String) {
-            this.data = ((String) data).getBytes(); // 텍스트는 인코딩해서 바이트로
-        } else if (data instanceof byte[]) {
-            this.data = (byte[]) data;
-        } else if (data == null) {
-            this.data = new byte[0];
-        } else {
-            this.data = data.toString().getBytes();
-        }
+        this.data = HttpResponseMapper.mapToByteArray(data);
 
         if (contentType != null)
             this.headers.put(HttpHeaderKey.CONTENT_LENGTH.toString(), String.valueOf(this.data.length));
@@ -51,7 +43,7 @@ public class ResponseEntity<T> {
     }
 
     public static ResponseEntity<Void> ok() {
-        return new ResponseEntity<>(null, HttpStatusCode.OK, HttpContentType.NONE);
+        return new ResponseEntity<>(null, HttpStatusCode.OK, HttpContentType.OCTET_STREAM);
     }
 
     public ResponseEntity<T> addHeader(HttpHeaderKey key, String value) {

@@ -5,7 +5,7 @@ import java.util.Optional;
 
 public interface DataAccessObject<T, K> {
 
-    void addRecord(K key, T data);
+    T save(T data);
 
     Optional<T> findById(K key);
 

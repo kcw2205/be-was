@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 
 public class SessionManager {
 
-    public static final String SESSION_ID = "sid";
     public static final Duration SESSION_EXPIRATION = Duration.ofHours(3);
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionManager.class);

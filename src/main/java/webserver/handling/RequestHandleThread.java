@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 
 public class RequestHandleThread implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestHandleThread.class);
@@ -63,12 +62,13 @@ public class RequestHandleThread implements Runnable {
                         break;
                     }
 
+                } catch (IOException e) {
+                    LOGGER.debug(e.getMessage());
+                    break;
                 } catch (RuntimeException e) {
                     LOGGER.error(e.getMessage(), e);
                     out.write(ResponseEntity.simple(HttpStatusCode.INTERNAL_SERVER_ERROR).toHttpResponse().serialize());
                     out.flush();
-                    break;
-                } catch (SocketTimeoutException e) {
                     break;
                 }
 

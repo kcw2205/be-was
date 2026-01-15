@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UrlEncodedBodyConverter implements DataMapConverter {
+public class UrlEncodedBodyConverter implements DataMapHttpBodyConverter {
 
     @Override
     public Map<String, String> convertFromBody(HttpRequestBody body) {

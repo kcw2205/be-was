@@ -197,3 +197,9 @@ gradle-app.setting
 *.hprof
 
 # End of https://www.toptal.com/developers/gitignore/api/gradle,intellij,java,macos
+
+# 이미지 업로드 storage
+storage
+
+# H2 데이터베이스 파일
+h2database.mv.db
