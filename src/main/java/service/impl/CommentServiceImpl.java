@@ -9,6 +9,7 @@ import model.Article;
 import model.Comment;
 import model.User;
 import service.CommentService;
+import service.SecurityService;
 import webserver.http.HttpException;
 
 import java.util.HashMap;
@@ -19,10 +20,12 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentDAO commentDAO;
     private final UserDAO userDAO;
+    private final SecurityService securityService;
 
-    public CommentServiceImpl(CommentDAO commentDAO, UserDAO userDAO) {
+    public CommentServiceImpl(CommentDAO commentDAO, UserDAO userDAO, SecurityService securityService) {
         this.commentDAO = commentDAO;
         this.userDAO = userDAO;
+        this.securityService = securityService;
     }
 
     // TODO: 쿼리 최적화?
@@ -49,7 +52,7 @@ public class CommentServiceImpl implements CommentService {
     public CommentDetailOutput addCommentToArticle(User user, Article article, CreateCommentCommand command) {
         return CommentDetailOutput.of(
             user,
-            commentDAO.save(new Comment(user.getUserId(), article.getId(), command.content()))
+            commentDAO.save(new Comment(user.getUserId(), article.getId(), securityService.escapeXss(command.content())))
         );
     }
 }

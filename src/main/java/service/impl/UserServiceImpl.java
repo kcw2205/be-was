@@ -5,6 +5,7 @@ import dto.command.UserLoginCommand;
 import dto.command.UserRegisterCommand;
 import exception.ServiceErrorCode;
 import model.User;
+import service.SecurityService;
 import service.UserService;
 import webserver.http.HttpException;
 import webserver.http.data.Cookie;
@@ -19,19 +20,12 @@ public class UserServiceImpl implements UserService {
     private static final int LEAST_PARAMETER_LENGTH = 4;
     private final UserDAO userDAO;
     private final SessionManager sessionManager;
+    private final SecurityService securityService;
 
-    public UserServiceImpl(UserDAO userDAO, SessionManager sessionManager) {
+    public UserServiceImpl(UserDAO userDAO, SessionManager sessionManager, SecurityService securityService) {
         this.userDAO = userDAO;
         this.sessionManager = sessionManager;
-    }
-
-    private boolean validateUserRegisterCommand(UserRegisterCommand userRegisterCommand) {
-        boolean idValid = userRegisterCommand.userId() != null && userRegisterCommand.userId().length() >= LEAST_PARAMETER_LENGTH;
-        boolean nameValid = userRegisterCommand.name() != null && userRegisterCommand.name().length() >= LEAST_PARAMETER_LENGTH;
-        boolean emailValid = userRegisterCommand.email() != null && userRegisterCommand.email().length() >= LEAST_PARAMETER_LENGTH;
-        boolean passwordValid = userRegisterCommand.password() != null && userRegisterCommand.password().length() >= LEAST_PARAMETER_LENGTH;
-
-        return idValid && nameValid && emailValid && passwordValid;
+        this.securityService = securityService;
     }
 
     @Override
@@ -52,26 +46,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createUser(UserRegisterCommand userDto) throws HttpException {
-        if (!validateUserRegisterCommand(userDto)) {
-            throw ServiceErrorCode.BAD_REQUEST_FORMAT.toException();
-        }
-
+    public User createUser(UserRegisterCommand command) throws HttpException {
         // 중복 User 의 경우 회원가입 제한
-        if (userDAO.findById(userDto.userId()).isPresent()) {
+        if (userDAO.findById(command.userId()).isPresent()) {
             throw ServiceErrorCode.SAME_ID_EXISTS.toException();
         }
 
         // 중복 닉네임일 경우 회원가입 제한
-        if (userDAO.findByNickname(userDto.name()).isPresent()) {
+        if (userDAO.findByNickname(command.name()).isPresent()) {
             throw ServiceErrorCode.SAME_NAME_EXISTS.toException();
         }
 
         User user = new User(
-            userDto.userId(),
-            userDto.password(),
-            userDto.name(),
-            userDto.email()
+            command.userId(),
+            command.password(),
+            securityService.escapeXss(command.name()),
+            command.email()
         );
 
         try {

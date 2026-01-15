@@ -1,11 +1,13 @@
 package service.impl;
 
 import dao.ArticleDAO;
+import dao.UserDAO;
 import dto.command.CreateArticleCommand;
 import exception.ServiceErrorCode;
 import model.Article;
 import model.User;
 import service.ArticleService;
+import service.SecurityService;
 import webserver.http.HttpException;
 
 import java.util.Optional;
@@ -13,9 +15,13 @@ import java.util.Optional;
 public class ArticleServiceImpl implements ArticleService {
 
     private final ArticleDAO articleDAO;
+    private final UserDAO userDAO;
+    private final SecurityService securityService;
 
-    public ArticleServiceImpl(ArticleDAO articleDAO) {
+    public ArticleServiceImpl(ArticleDAO articleDAO, UserDAO userDAO, SecurityService securityService) {
         this.articleDAO = articleDAO;
+        this.userDAO = userDAO;
+        this.securityService = securityService;
     }
 
     @Override

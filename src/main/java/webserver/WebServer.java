@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import service.ArticleService;
 import service.CommentService;
 import service.ImageUploadService;
+import service.SecurityService;
 import service.UserService;
 import service.impl.ArticleServiceImpl;
 import service.impl.CommentServiceImpl;
@@ -94,9 +95,10 @@ public class WebServer {
 
 
         // user-defined service layers
-        UserService userService = new UserServiceImpl(userDAO, sessionManager);
-        ArticleService articleService = new ArticleServiceImpl(articleDAO);
-        CommentService commentService = new CommentServiceImpl(commentDAO, userDAO);
+        SecurityService securityService = new SecurityService();
+        UserService userService = new UserServiceImpl(userDAO, sessionManager, securityService);
+        ArticleService articleService = new ArticleServiceImpl(articleDAO, userDAO, securityService);
+        CommentService commentService = new CommentServiceImpl(commentDAO, userDAO, securityService);
         ImageUploadService imageUploadService = new ImageUploadServiceImpl(imageUploadWorker);
 
         // user-defined handlers
