@@ -19,7 +19,6 @@ import webserver.session.SessionManager;
  * 던지도록, 받는 곳에서 처리하도록 Checked Exception으로 만든 새로운 무언가를 던지도록 만들자.
  */
 public class UserServiceImpl implements UserService {
-    private static final int LEAST_PARAMETER_LENGTH = 4;
     private final UserDAO userDAO;
     private final SessionManager sessionManager;
     private final SecurityService securityService;
@@ -108,4 +107,17 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    @Override
+    public void syncSession(HttpRequest httpRequest) throws HttpException {
+        String sid = httpRequest
+            .getCookieByName(SESSION_ID)
+            .orElseThrow(() -> new HttpException(HttpStatusCode.UNAUTHORIZED, "세션이 만료되었습니다."))
+            .getValue();
+
+        User user = userDAO
+            .findById(getCurrentUser(httpRequest).getUserId())
+            .orElseThrow(ServiceErrorCode.DATA_VALIDATION_ERROR::toException);
+
+        sessionManager.updateSession(sid, user);
+    }
 }

@@ -101,6 +101,7 @@ public class UserHandler {
         } catch (RuntimeException e) {
             // 업데이트 실패 시, 데이터베이스에 있던 내용과 세션을 다시 동기화 해줘야함. (update 로직 때문)
             // TODO: 불변성을 지키고자해도 동기화를 해주어야하므로 현재로썬 이 방법이 가장 간단 (유지보수에는 비적합)
+            userService.syncSession(httpRequest);
             throw e;
         }
     }
